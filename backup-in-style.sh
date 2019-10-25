@@ -2,7 +2,6 @@
 ##
 ##################################################################################
 ## backup-in-style.sh								##
-## Version - 0.03.36								##
 ##										##
 ## Description:									##
 ##	This script lets you create a backup with the most recently		##
@@ -31,15 +30,59 @@
 ##										##
 ##################################################################################
 
+clear
+
 
 ###
-## Variables
+## Assigning values to the variables created.
+###
+
+###
+## The Locations of the Commands.
+#
+
+WHICH_CMD=`which which`
+FIND_CMD=`"${WHICH_CMD}" find`
+XARGS_CMD=`"${WHICH_CMD}" xargs`
+TAR_CMD=`"${WHICH_CMD}" tar`
+SCP_CMD=`"${WHICH_CMD}" scp`
+GZIP_CMD=`"${WHICH_CMD}" gzip`
+CP_CMD=`"${WHICH_CMD}" cp`
+ECHO_CMD=`"${WHICH_CMD}" echo`
+
+
+###
+## Assigning Names for the Backup Files
 #
 
 FILES_TO_BACKUP=$(date +%d-%m-%Y)-IMP_FILES
 FULL_BACKUP=${1:-$FILES_TO_BACKUP}
 
 
+###
+## Creating the selection menu.
+###
+
+###
+## Main Selection Menu.
+#
+
+$ECHO_CMD -e "\n\t###################"
+$ECHO_CMD -e "\t# BACKUP IN STYLE #"
+$ECHO_CMD -e "\t###################\n\n"
+$ECHO_CMD -e "\t1 - Backup a File"
+$ECHO_CMD -e "\t2 - Backup aDirectory"
+$ECHO_CMD -e "\n\n"
+read -p "-> " SELECTION
+
+case $SELECTION in
+	1)
+		$ECHO_CMD -e "\n\tPlease enter the name of the file you want to backup."
+		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/file"
+		read -p "-> " FILENAME
+		
+		$ECHO_CMD -e "\n\tPreparing the file for backup. This will take some time ..."
+		$TAR_CMD -cvf $FULL_BACKUP.tar $FILE
 ###
 ## Choose the directory to save.
 #
