@@ -2,7 +2,7 @@
 ##
 ##################################################################################
 ## backup-in-style.sh								##
-##										##
+## Version - 1.06.46								##
 ## Description:									##
 ##	This script lets you create a backup with the most recently		##
 ##	modified files. After compressing the files it asks you 		##
@@ -29,8 +29,6 @@
 ## Boston, MA 02111-1307, USA.							##
 ##										##
 ##################################################################################
-
-clear
 
 
 ###
@@ -72,105 +70,146 @@ $ECHO_CMD -e "\t# BACKUP IN STYLE #"
 $ECHO_CMD -e "\t###################\n\n"
 $ECHO_CMD -e "\t1 - Backup a File"
 $ECHO_CMD -e "\t2 - Backup aDirectory"
+$ECHO_CMD -e "\tQ - Exit Program"
 $ECHO_CMD -e "\n\n"
 read -p "-> " SELECTION
 
 case $SELECTION in
 	1)
+		$ECHO_CMD -e "\n\tCompression of the file will start immediately after pressing enter."
 		$ECHO_CMD -e "\n\tPlease enter the name of the file you want to backup."
 		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/file"
 		read -p "-> " FILENAME
 		
-		$ECHO_CMD -e "\n\tPreparing the file for backup. This will take some time ..."
-		$TAR_CMD -cvf $FULL_BACKUP.tar $FILE
-###
-## Choose the directory to save.
-#
-
-echo -e "\n\tPlease enter the directory name to create the backup."
-echo -e "\tExample: Use Absolute path: /path/to/files/to/backup "
-read -p "-> " backup
-
-
-###
-## Choose what directory to ignore.
-#
-
-echo -e "\n\tPlease enter the directory name to ignore."
-echo -e "\tExample: Use Absolute Paths:  /path/to/ignore/directory"
-echo -e "\tLeave blank if no directory is to be ignored."
-read -p "-> " ignore
-
-
-###
-## Compress the backup.
-#
-
-echo -e "\n\tPreparing the backup."
-echo -e "\tCompression of backup has started. This will take some time..."
-find $backup -mtime -1 -type f -path $ignore -prune -o -print0 | xargs -0 tar -rvf "$FULL_BACKUP.tar" > /dev/null 2>&1
-gzip $FULL_BACKUP.tar > /dev/null 2>&1
-if (( "$?" != "0" ));
-then
-	echo -e "\n\tError! Check the command syntax for \"gzip\". Exiting."
-	exit 1;
-fi
-echo -e "\n\tFinished compression of backup.\n\n"
-
-
-###
-## Storage Location.
-#
-
-echo -e "\n\tPlease enter the storage location from the following options."
-echo -e "\t1 - External Hard Drive or USB Drive"
-echo -e "\t2 - Remote Server"
-read -p "-> " choice
-
-case $choice in
-	1)
-		echo -e "\n\tEnter the storage location."
-		echo -e "\tExample: Use Absolute Paths: /path/to/USB, /path/to/ExternalHD"
-		read -p "-> " storage
-
-		echo -e "\n\tTransfering copy of backup archive to storage location."
-		cp $FULL_BACKUP.tar.gz $storage > /dev/null 2>&1
-		if (( "$?" != "0" ));
+		$ECHO_CMD -e "\n\tPreparing the backup. This will take some time ..."
+		$TAR_CMD -cvf $FULL_BACKUP.tar $FILENAME > /dev/null 2>&1
+		if (( "$?" != "0" ))
 		then
-			echo -e "\n\tError! Check command syntax for \"cp\" or storage location.\n\n"
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"tar\". Exiting.\n\n"
 			exit 1;
 		fi
-		echo -e "\n\tSuccessful transfer of backup to storage location.\n\n"
+		
+		$ECHO_CMD -e "\n\tCompressing with \"gzip\".\n"
+		$GZIP_CMD $FULL_BACKUP.tar > /dev/null 2>&1
+		if (( "$?" != "0" ))
+		then
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"gzip\". Exiting.\n\n"
+			exit 1;
+		fi
 		;;
 	2)
-		# ****NOTE****
-		# Before using this option please edit the command for scp so that it
-		# matches your true location of the ssh server. Thank you.
-		# If you don't understand how to use ssh or scp please go to their 
-		# respective, current and up-to-date manual pages for information.
-		# You can also use "sftp" (Secure File Transport Protocol) if you prefer.
-
-		echo -e "\n\tThe SSH server will be used to transfer your backup."
-		echo -e "\tPlease enter the IP Address of the SSH server in the following prompt."
-		read -p "-> " ipaddr
-
-		echo -e "\n\tEnter the username of the remote SSH server."
-		read -p "-> " username
-
-		echo -e "\n\tEnter the name of the directory (storage location) of the SSH server."
-		read -p "-> " remotedir
-
-		echo -e "\n\tReady to transfer the backup to the storage location."
-		scp $FULL_BACKUP.tar.gz $username@$ipaddr:$remotedir > /dev/null 2>&1
-		if (( "$?" != "0" ));
+		$ECHO_CMD -e "\n\tCompression of the directory will start immediately after pressing enter."
+		$ECHO_CMD -e "\tPlease enter the name of the directory you want to backup."
+		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/directory "
+		read -p "-> " DIRNAME
+		
+		$ECHO_CMD -e "\n\tPlease enter the name of the directory you want to ignore."
+		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/ignore/directory "
+		$ECHO_CMD -e "\tLeave blank if no directory is to be ignored."
+		read -p "-> " IGNOREDIR
+		
+		$ECHO_CMD -e "\n\tPreparing the backup. This will take some time ..."
+		$FIND_CMD $DIRNAME -mtime -1 -type f -path $IGNOREDIR -prune -o -print0 | $XARGS_CMD -0 $TAR_CMD -rvf "$FULL_BACKUP.tar" > /dev/null 2>&1
+		if (( "$?" != "0" ))
 		then
-			echo -e "\n\tError! Check command syntax for \"scp\" and check the IP Address if it is correct.\n\n"
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"find\". Exiting.\n\n"
 			exit 1;
 		fi
-		echo -e "\n\tFinished transfer of backup."
+		
+		$ECHO_CMD -e "\n\tCompressing with \"gzip\"."
+		$GZIP_CMD $FULL_BACKUP.tar > /dev/null 2>&1
+		if (( "$?" != "0" ))
+		then
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"gzip\". Exiting.\n\n"
+			exit 1;
+		fi
+		;;
+	'Q')
+		;&
+	'q')
+		$ECHO_CMD -e "\n\tExit Program\n\n"
+		exit 1;
 		;;
 	*)
-		echo -e "\n\tError! Unknown character entered. Exiting program.\n\n"
+		$ECHO_CMD -e "\n\tUnknown character entered. Exiting!\n\n"
+		exit 1;
+		;;
+esac
+
+$ECHO_CMD -e "\n\tFinished compression of Backup!\n\n"
+
+###
+## Secondary Selection Menu
+###
+
+###
+## Select Storage Location.
+#
+
+$ECHO_CMD -e "\n\t###################"
+$ECHO_CMD -e "\t# BACKUP IN STYLE #"
+$ECHO_CMD -e "\t###################\n"
+$ECHO_CMD -e "\tPlease enter the storage location from the following options."
+$ECHO_CMD -e "\t1 - External Hard Drive or USB Drive "
+$ECHO_CMD -e "\t2 - Use \"scp\" if you want to create a copy of the backup and sent it securely to a remote server."
+$ECHO_CMD -e "\tQ - Exit Program"
+read -p "-> " CHOICE
+
+case $CHOICE in
+	1)
+		$ECHO_CMD -e "\n\tEnter the storage location for the USB drive or external HD."
+		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/USBDRIVE, /path/to/ExternalHD "
+		read -p "-> " STORAGE
+		
+		$ECHO_CMD -e "\n\tTransfering the copy of the backup to storage location. This will take some time ..."
+		$CP_CMD $FULL_BACKUP.tar.gz $STORAGE > /dev/null 2>&1
+		if (( "$?" != "0" ))
+		then
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"cp\" or storage location.\n\n"
+			exit 1;
+		fi
+		
+		$ECHO_CMD -e "\n\tSuccessful transfer of backup to storage location.\n\n"
+		;;
+	2)
+		## ***NOTE***
+		## Before using this option please edit the command for "scp" so that it
+		## matches your true location of the ssh server and add additional options
+		## if needed. Thank you.
+		## If you don't understand how to use ssh or scp please go to their
+		## respective, current, and up-to-date manual pages for information.
+		## You can also use "sftp" (Secure File Transport Protocol) if you prefer.
+		
+		$ECHO_CMD -e "\n\tYou are using \"scp\" to create a copy of the backup to send to the SSH Server."
+		$ECHO_CMD -e "\tPlease enter the IP address of the SSH Server in the following prompt."
+		$ECHO_CMD -e "\tExample: xxx.xxx.xxx.xxx \n"
+		read -p "-> " REMOTEIPADDR
+		
+		$ECHO_CMD -e "\n\tEnter the username of the remote SSH Server or the username to be used.\n"
+		read -p "-> " USERNAME
+		
+		$ECHO_CMD -e "\n\tEnter the name of the directory (storage location) of the SSH Server."
+		$ECHO_CMD -e "\tExample: /path/to/remote/directory \n"
+		read -p "-> " REMOTEDIR
+		
+		$ECHO_CMD -e "\n\tReady to transfer the backup to the storage location."
+		$SCP_CMD $FULL_BACKUP.tar.gz $USERNAME@$REMOTEIPADDR:$REMOTEDIR > /dev/null 2>&1
+		if (( "$?" != "0" ))
+		then
+			$ECHO_CMD -e "\n\tError! Check the command syntax for \"scp\". Exiting.\n\n"
+			exit 1;
+		fi
+		
+		$ECHO_CMD -e "\n\tSecure transfer of backup has finished.\n\n"
+		;;
+	'Q')
+		;&
+	'q')
+		$ECHO_CMD -e "\n\tExit Program\n\n"
+		exit 1;
+		;;
+	*)
+		$ECHO_CMD -e "\n\tUnknown character entered. Exiting.\n\n"
 		exit 1;
 		;;
 esac
