@@ -1,35 +1,5 @@
-#!/bin/bash
+#!/usr/bin/bash
 ##
-##################################################################################
-## backup-in-style.sh								##
-## Version - 1.06.46								##
-## Description:									##
-##	This script lets you create a backup with the most recently		##
-##	modified files. After compressing the files it asks you 		##
-##	where you want to transfer your backup. To a USB drive, 		##
-##	an external hard drive, or a remote server.				##
-##										##
-## Copyright (C) 2019 Joel Vazquez Ortiz					##
-##										##
-## GPL - General Public License							##
-##										##
-## This program is free software; you can redistribute it and/or modify		##
-## it under the terms of the GNU General Public License as published by		##
-## the Free Software Foundation; either version 3 of the license , or		##
-## (at your option) any later version.						##
-##										##
-## This program is distributed in the hope that it will be useful		##
-## but WITHOUT ANT WARRANTY; without even implied warranty of			##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the			##
-## GNU General Public License for more details.					##
-##										##
-## You should have received a copy of the GNU General Public License		##
-## along with this program; if not write to the Free Software			##
-## Foundation, Inc., 59 Temple Place - Suite 330,				##
-## Boston, MA 02111-1307, USA.							##
-##										##
-##################################################################################
-
 
 ###
 ## Assigning values to the variables created.
@@ -53,7 +23,7 @@ ECHO_CMD=`"${WHICH_CMD}" echo`
 ## Assigning Names for the Backup Files
 #
 
-FILES_TO_BACKUP=$(date +%d-%m-%Y)-IMP_FILES
+FILES_TO_BACKUP=ARCHIVE-$(date +%d%m%Y-%H%M%S)-BACKUP
 FULL_BACKUP=${1:-$FILES_TO_BACKUP}
 
 
@@ -65,18 +35,18 @@ FULL_BACKUP=${1:-$FILES_TO_BACKUP}
 ## Main Selection Menu.
 #
 
-$ECHO_CMD -e "\n\t###################"
-$ECHO_CMD -e "\t# BACKUP IN STYLE #"
-$ECHO_CMD -e "\t###################\n\n"
-$ECHO_CMD -e "\t1 - Backup a File"
-$ECHO_CMD -e "\t2 - Backup aDirectory"
-$ECHO_CMD -e "\tQ - Exit Program"
-$ECHO_CMD -e "\n\n"
+$ECHO_CMD -e "\n\t###############################################"
+$ECHO_CMD -e "\t# Welcome! You are now using: Backup In Style #"
+$ECHO_CMD -e "\t###############################################\n\n"
+$ECHO_CMD -e "\tPlease choose what to backup.\n"
+$ECHO_CMD -e "\t1 - Backup a file.\n"
+$ECHO_CMD -e "\t2 - Backup a directory.\n"
+$ECHO_CMD -e "\tQ - Exiting program!\n\n"
+
 read -p "-> " SELECTION
 
 case $SELECTION in
 	1)
-		$ECHO_CMD -e "\n\tCompression of the file will start immediately after pressing enter."
 		$ECHO_CMD -e "\n\tPlease enter the name of the file you want to backup."
 		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/file"
 		read -p "-> " FILENAME
@@ -136,7 +106,7 @@ case $SELECTION in
 		;;
 esac
 
-$ECHO_CMD -e "\n\tFinished compression of Backup!\n\n"
+$ECHO_CMD -e "\n\tBackup has finished!\n\n"
 
 ###
 ## Secondary Selection Menu
@@ -146,22 +116,23 @@ $ECHO_CMD -e "\n\tFinished compression of Backup!\n\n"
 ## Select Storage Location.
 #
 
-$ECHO_CMD -e "\n\t###################"
-$ECHO_CMD -e "\t# BACKUP IN STYLE #"
-$ECHO_CMD -e "\t###################\n"
-$ECHO_CMD -e "\tPlease enter the storage location from the following options."
-$ECHO_CMD -e "\t1 - External Hard Drive or USB Drive "
-$ECHO_CMD -e "\t2 - Use \"scp\" if you want to create a copy of the backup and sent it securely to a remote server."
-$ECHO_CMD -e "\tQ - Exit Program"
+$ECHO_CMD -e "\n\t######################################"
+$ECHO_CMD -e "\t# You are now using: Backup In Style #"
+$ECHO_CMD -e "\t######################################\n\n"
+$ECHO_CMD -e "\tPlease enter the storage location from the following options.\n"
+$ECHO_CMD -e "\t1 - External Hard Drive or USB Drive\n"
+$ECHO_CMD -e "\t2 - Send to a secure remote server using SSH.\n"
+$ECHO_CMD -e "\tQ - Exit Program\n\n"
+
 read -p "-> " CHOICE
 
 case $CHOICE in
 	1)
-		$ECHO_CMD -e "\n\tEnter the storage location for the USB drive or external HD."
-		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/USBDRIVE, /path/to/ExternalHD "
+		$ECHO_CMD -e "\n\tEnter the storage location for the USB drive or external HD.\n"
+		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/USBDRIVE, /path/to/ExternalHD\n"
 		read -p "-> " STORAGE
 		
-		$ECHO_CMD -e "\n\tTransfering the copy of the backup to storage location. This will take some time ..."
+		$ECHO_CMD -e "\n\tTransfering the backup data to the storage location. This will take some time ...\n"
 		$CP_CMD $FULL_BACKUP.tar.gz $STORAGE > /dev/null 2>&1
 		if (( "$?" != "0" ))
 		then
@@ -169,30 +140,29 @@ case $CHOICE in
 			exit 1;
 		fi
 		
-		$ECHO_CMD -e "\n\tSuccessful transfer of backup to storage location.\n\n"
+		$ECHO_CMD -e "\n\tYour data has been successfuly transfered.\n\n"
 		;;
 	2)
 		## ***NOTE***
-		## Before using this option please edit the command for "scp" so that it
-		## matches your true location of the ssh server and add additional options
-		## if needed. Thank you.
+		## Please use the correct IP Addresses of the SSH server you are trying
+		## to connect. Edit the command to add additional options if needed.
+		## Thank you.
 		## If you don't understand how to use ssh or scp please go to their
-		## respective, current, and up-to-date manual pages for information.
-		## You can also use "sftp" (Secure File Transport Protocol) if you prefer.
+		## respective and up-to-date manual pages for information.
 		
-		$ECHO_CMD -e "\n\tYou are using \"scp\" to create a copy of the backup to send to the SSH Server."
-		$ECHO_CMD -e "\tPlease enter the IP address of the SSH Server in the following prompt."
+		$ECHO_CMD -e "\n\tThank you for choosing the secure way of transfering your data.\n"
+		$ECHO_CMD -e "\tPlease enter the IP address of the SSH Server in the following prompt.\n"
 		$ECHO_CMD -e "\tExample: xxx.xxx.xxx.xxx \n"
 		read -p "-> " REMOTEIPADDR
 		
-		$ECHO_CMD -e "\n\tEnter the username of the remote SSH Server or the username to be used.\n"
+		$ECHO_CMD -e "\n\tEnter the username of your choice.\n"
 		read -p "-> " USERNAME
 		
-		$ECHO_CMD -e "\n\tEnter the name of the directory (storage location) of the SSH Server."
+		$ECHO_CMD -e "\n\tEnter the name of the remote directory (storage location) of the SSH Server.\n"
 		$ECHO_CMD -e "\tExample: /path/to/remote/directory \n"
 		read -p "-> " REMOTEDIR
 		
-		$ECHO_CMD -e "\n\tReady to transfer the backup to the storage location."
+		$ECHO_CMD -e "\n\tYour backup data is ready to be transfered.\n"
 		$SCP_CMD $FULL_BACKUP.tar.gz $USERNAME@$REMOTEIPADDR:$REMOTEDIR > /dev/null 2>&1
 		if (( "$?" != "0" ))
 		then
@@ -200,7 +170,7 @@ case $CHOICE in
 			exit 1;
 		fi
 		
-		$ECHO_CMD -e "\n\tSecure transfer of backup has finished.\n\n"
+		$ECHO_CMD -e "\n\tSecure transfer of your data has finished.\n\n"
 		;;
 	'Q')
 		;&
