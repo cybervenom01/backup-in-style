@@ -1,18 +1,50 @@
-# Backup In Style Bash Script
+# Backup In Style
 
-Backing up your data can help you protect it from accidental
-deletion or data corruption. Disasters can happen at any given moment
-in time. For example, you could be working on your computer when an
-unexpected a power outage happens. Your computer gets infected by a
-computer virus, or you can accidentaly hit the "Exit Without Saving"
-button on the screen for your word document.
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Bash](https://img.shields.io/badge/language-Bash-lightgrey)
 
-This script is interactive and requires user input. It displays
-user friendly messages to help you with the information you need to
-enter at the prompt. It is moderately commented to help you understand
-what the script is doing.
+## Description
 
-Executing this script will help you backup your important data
-of your choice. The data you have chosen to backup will be compressed
-into a "tar.gz" archive. Then you will have the choice to transfer your
-backup data to a secure location.
+Data loss can occur unexpectedly due to various factors such as accidental deletion,
+data corruption, power outages, malware infections, or inadvertent user actions.
+Implementing regular backup procedures is crucial to safeguard important information.
+
+"Backup In Style" is an interactive Bash script designed to facilitate the secure
+backup of user-specified data. Upon execution, the script prompts the user for necessary
+input, providing clear and user-friendly instructions to guide the process. It then
+compresses the selected files or directories into a .tar.gz archive, ensuring efficient
+storage and integrity of the backed-up data.
+
+The script's codebase includes comprehensive comments to enhance readability and
+understanding, making it accessible for users who wish to review or modify its
+functionality.
+
+By utilizing "Backup in Style", users can establish a reliable and streamlined approach
+to data preservation, mitigating the risks associated with data loss incidents.
+
+## Features
+
+- Interactive and user-friendly
+- Supports file and directory selection
+- Creates compressed `.tar.gz` archives
+- Commented for ease of customization
+
+## Installation
+
+`git clone https://github.com/cybervenom01/backup-in-style.git`
+`cd backup-in-style`
+`chmod +x backup.sh`
+
+## Usage
+
+`./backup.sh`
+
+`Welcome to Backup in Style!`
+`Enter the directory or file you want to backup: /home/user/directory`
+`Enter a name for the backup: docs_backup`
+`Creating archive...`
+`Backup complete: docs_backup.tar.gz`
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
