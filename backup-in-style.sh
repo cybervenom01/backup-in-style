@@ -4,12 +4,14 @@
 ###
 ## Assigning values to the variables created.
 ###
+##NOTE: Make some changes to this file and see if you can make more simpler.
 
 ###
 ## The Locations of the Commands.
 #
 
 WHICH_CMD=`which which`
+
 FIND_CMD=`"${WHICH_CMD}" find`
 XARGS_CMD=`"${WHICH_CMD}" xargs`
 TAR_CMD=`"${WHICH_CMD}" tar`
