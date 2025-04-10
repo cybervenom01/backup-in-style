@@ -2,23 +2,18 @@
 ##
 
 ###
-## Assigning values to the variables created.
+## Commands to use.
 ###
-##NOTE: Make some changes to this file and see if you can make more simpler.
 
-###
-## The Locations of the Commands.
-#
+##NOTE: If the commands don't exist in the current system please install them manually.
 
-WHICH_CMD=`which which`
-
-FIND_CMD=`"${WHICH_CMD}" find`
-XARGS_CMD=`"${WHICH_CMD}" xargs`
-TAR_CMD=`"${WHICH_CMD}" tar`
-SCP_CMD=`"${WHICH_CMD}" scp`
-GZIP_CMD=`"${WHICH_CMD}" gzip`
-CP_CMD=`"${WHICH_CMD}" cp`
-ECHO_CMD=`"${WHICH_CMD}" echo`
+CMDFIND=`/usr/bin/find`
+CMDXARGS=`/usr/bin/xargs`
+CMDTAR=`/usr/bin/tar`
+CMDSCP=`/usr/bin/scp`
+CMDGZIP=`/usr/bin/gzip`
+CMDCP=`/usr/bin/cp`
+CMDECHO=`/usr/bin/echo`
 
 
 ###
