@@ -45,10 +45,15 @@ to data preservation, mitigating the risks associated with data loss incidents.
 `./backup.sh`
 
 `Welcome to Backup in Style!`
+
 `Enter the directory or file you want to backup: /home/user/directory`
+
 `Enter a name for the backup: docs_backup`
+
 `Creating archive...`
+
 `Backup complete: docs_backup.tar.gz`
+
 
 ## License
 
