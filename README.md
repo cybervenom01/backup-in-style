@@ -31,9 +31,12 @@ to data preservation, mitigating the risks associated with data loss incidents.
 
 ## Installation
 
-`git clone https://github.com/cybervenom01/backup-in-style.git`
-`cd backup-in-style`
-`chmod +x backup.sh`
+```Bash
+git clone https://github.com/cybervenom01/backup-in-style.git
+cd backup-in-style
+chmod +x backup.sh
+```
+
 
 ## Usage
 
