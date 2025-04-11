@@ -22,6 +22,7 @@ functionality.
 By utilizing "Backup in Style", users can establish a reliable and streamlined approach
 to data preservation, mitigating the risks associated with data loss incidents.
 
+
 ## Features
 
 - Interactive and user-friendly
@@ -29,24 +30,27 @@ to data preservation, mitigating the risks associated with data loss incidents.
 - Creates compressed `.tar.gz` archives
 - Commented for ease of customization
 
+
 ## Installation
 
-```Bash
-git clone https://github.com/cybervenom01/backup-in-style.git
-cd backup-in-style
-chmod +x backup.sh
-```
+`git clone https://github.com/cybervenom01/backup-in-style.git`
+
+`cd backup-in-style`
+
+`chmod +x backup.sh`
 
 
 ## Usage
 
 `./backup.sh`
 
-`Welcome to Backup in Style!`
-`Enter the directory or file you want to backup: /home/user/directory`
-`Enter a name for the backup: docs_backup`
-`Creating archive...`
-`Backup complete: docs_backup.tar.gz`
+```Bash
+Welcome to Backup in Style!
+Enter the directory or file you want to backup: /home/user/directory
+Enter a name for the backup: docs_backup
+Creating archive...
+Backup complete: docs_backup.tar.gz
+```
 
 ## License
 
