@@ -20,7 +20,8 @@ CMDECHO=`/usr/bin/echo`
 ## Assigning Names for the Backup Files
 #
 
-FILES_TO_BACKUP=ARCHIVE-$(date +%d%m%Y-%H%M%S)-BACKUP
+TIMESTAMP=$(date +%d%m%Y-%H%M%S)
+FILES_TO_BACKUP=ARCHIVE-BACKUP-${TIMESTAMP}
 FULL_BACKUP=${1:-$FILES_TO_BACKUP}
 
 
