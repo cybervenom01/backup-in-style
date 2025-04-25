@@ -2,20 +2,40 @@
 ##
 
 ###
-## Commands to use.
+## Commands for the script to function.
 ###
 
-##NOTE: If the commands don't exist in the current system please install them manually.
+###
+## Searches for the commands which help to compress, archive, and remotely transfer your data.
+#
+
+LST_CMDS=( "tar" "zstd" "ssh" "scp" )
+
+if cmds in "${LST_CMDS[@]}";
+do
+	if ! command -v "$cmds" > /dev/null 2>&1;
+	then
+		echo "$cmds not found"
+		echo "Please install the corresponding packages."
+		exit 0
+	fi
+done
+
+
+###
+## Other commands that the script will be using.
+#
 
 CMDFIND=`/usr/bin/find`
 CMDXARGS=`/usr/bin/xargs`
 CMDTAR=`/usr/bin/tar`
 CMDSCP=`/usr/bin/scp`
-CMDGZIP=`/usr/bin/gzip`
+CMDZSTD=`/usr/bin/zstd`
 CMDCP=`/usr/bin/cp`
 CMDECHO=`/usr/bin/echo`
+CMDSSH=`/usr/bin/ssh`
 
-
+##FIXME: Create new variales and values for the names of the archives.
 ###
 ## Assigning Names for the Backup Files
 #
