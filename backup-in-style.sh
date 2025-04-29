@@ -23,7 +23,11 @@ done
 
 
 ###
-## Other commands that the script will be using.
+## Configuring the values into the variables.
+###
+
+###
+## Locations of the commands to be used.
 #
 
 CMDFIND=`/usr/bin/find`
@@ -35,47 +39,89 @@ CMDCP=`/usr/bin/cp`
 CMDECHO=`/usr/bin/echo`
 CMDSSH=`/usr/bin/ssh`
 
-##FIXME: Create new variales and values for the names of the archives.
+
 ###
 ## Assigning Names for the Backup Files
 #
 
+USR=$( whoami )
+HOST=$( uname -n )
 TIMESTAMP=$(date +%d%m%Y-%H%M%S)
-FILES_TO_BACKUP=ARCHIVE-BACKUP-${TIMESTAMP}
-FULL_BACKUP=${1:-$FILES_TO_BACKUP}
+ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}
+FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 
 ###
-## Creating the selection menu.
+## Display a Usage Message.
 ###
 
 ###
-## Main Selection Menu.
+## Display a usage message.
 #
 
-$ECHO_CMD -e "\n\t###############################################"
-$ECHO_CMD -e "\t# Welcome! You are now using: Backup In Style #"
-$ECHO_CMD -e "\t###############################################\n\n"
-$ECHO_CMD -e "\tPlease choose what to backup.\n"
-$ECHO_CMD -e "\t1 - Backup a file.\n"
-$ECHO_CMD -e "\t2 - Backup a directory.\n"
-$ECHO_CMD -e "\tQ - Exiting program!\n\n"
+displayUsage ()
+{
+	echo -e "Usage: ./$basename"
+	echo -e "Use absolute paths: /path/to/file"
+}
 
-read -p "-> " SELECTION
+	
+###
+## Display a Title
+###
 
-case $SELECTION in
-	1)
-		$ECHO_CMD -e "\n\tPlease enter the name of the file you want to backup."
-		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/file"
-		read -p "-> " FILENAME
-		
-		$ECHO_CMD -e "\n\tPreparing the backup. This will take some time ..."
-		$TAR_CMD -cvf $FULL_BACKUP.tar $FILENAME > /dev/null 2>&1
-		if (( "$?" != "0" ))
-		then
-			$ECHO_CMD -e "\n\tError! Check the command syntax for \"tar\". Exiting.\n\n"
-			exit 1;
-		fi
+###
+## Display the name of the script.
+#
+
+$CMDECHO -e "\n\t "
+$CMDECHO -e "\t>>> { Backup In Style } <<<"
+$CMDECHO -e "\t \n\n"
+
+
+###
+## Choose a file or directory to archive and compress.
+###
+
+###
+## Choose a file or directory to archive.
+#
+
+read -p "Choose a file or directory to archive: " FILENAME
+
+
+###
+## Input validation
+#
+
+if [ ! -e "$FILENAME" ];
+then
+	echo "Unknown file or directory: Does not exist."
+	displayUsage
+	exit 1
+fi
+
+
+###
+## Creating the backup archive.
+#
+
+$CMDECHO -e "\nPreparing backup. This will take some time ..."
+$CMDTAR -cvf $FULL_BACKUP.tar $FILENAME > /dev/null 2>&1
+
+
+###
+## Display an error message.
+#
+
+if [ $? -ne "0" ];
+then
+	$ECHO_CMD -e "\nAn error has occurred during the backup process.\n\n"
+	exit 1;
+fi
+
+
+##FIXME: Make use of the zstd command for the next stage.
 		
 		$ECHO_CMD -e "\n\tCompressing with \"gzip\".\n"
 		$GZIP_CMD $FULL_BACKUP.tar > /dev/null 2>&1
@@ -123,6 +169,11 @@ case $SELECTION in
 		exit 1;
 		;;
 esac
+
+
+###
+###
+###
 
 $ECHO_CMD -e "\n\tBackup has finished!\n\n"
 
