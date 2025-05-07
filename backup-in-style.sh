@@ -36,7 +36,7 @@ CMDTAR=`/usr/bin/tar`
 CMDSCP=`/usr/bin/scp`
 CMDZSTD=`/usr/bin/zstd`
 CMDCP=`/usr/bin/cp`
-CMDECHO=`/usr/bin/echo`
+#CMDECHO=`/usr/bin/echo`
 CMDSSH=`/usr/bin/ssh`
 
 
@@ -47,7 +47,7 @@ CMDSSH=`/usr/bin/ssh`
 USR=$( whoami )
 HOST=$( uname -n )
 TIMESTAMP=$(date +%d%m%Y-%H%M%S)
-ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}
+ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
 FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 
@@ -74,9 +74,9 @@ displayUsage ()
 ## Display the name of the script.
 #
 
-$CMDECHO -e "\n\t "
-$CMDECHO -e "\t>>> { Backup In Style } <<<"
-$CMDECHO -e "\t \n\n"
+echo -e "\n\t "
+echo -e "\t>>> { Backup In Style } <<<"
+echo -e "\t \n\n"
 
 
 ###
@@ -87,7 +87,16 @@ $CMDECHO -e "\t \n\n"
 ## Choose a file or directory to archive.
 #
 
-read -p "Choose a file or directory to archive: " FILENAME
+read -p "Choose which file or directory to archive: " FILENAME
+
+
+###
+## Choos a file or directory to ignore.
+#
+
+
+echo -e "\nYou can leave this empty if you don't want to ignore any files or directories.\n"
+read -p "Choose which file or directory to ignore: " IGNOREFILE
 
 
 ###
@@ -106,76 +115,50 @@ fi
 ## Creating the backup archive.
 #
 
-$CMDECHO -e "\nPreparing backup. This will take some time ..."
-$CMDTAR -cvf $FULL_BACKUP.tar $FILENAME > /dev/null 2>&1
+echo -e "\nPreparing backup. This will take some time ..."
+$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf ${FULL_BACKUP}.tar ${FILENAME} > /dev/null 2>&1
 
 
 ###
-## Display an error message.
+## Display an error message if there was a problem archiving the files.
 #
 
 if [ $? -ne "0" ];
 then
-	$ECHO_CMD -e "\nAn error has occurred during the backup process.\n\n"
+	echo -e "\nAn error has occurred during the archiving process.\n\n"
 	exit 1;
 fi
 
 
-##FIXME: Make use of the zstd command for the next stage.
-		
-		$ECHO_CMD -e "\n\tCompressing with \"gzip\".\n"
-		$GZIP_CMD $FULL_BACKUP.tar > /dev/null 2>&1
-		if (( "$?" != "0" ))
-		then
-			$ECHO_CMD -e "\n\tError! Check the command syntax for \"gzip\". Exiting.\n\n"
-			exit 1;
-		fi
-		;;
-	2)
-		$ECHO_CMD -e "\n\tCompression of the directory will start immediately after pressing enter."
-		$ECHO_CMD -e "\tPlease enter the name of the directory you want to backup."
-		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/directory "
-		read -p "-> " DIRNAME
-		
-		$ECHO_CMD -e "\n\tPlease enter the name of the directory you want to ignore."
-		$ECHO_CMD -e "\tExample: Use absolute paths: /path/to/ignore/directory "
-		$ECHO_CMD -e "\tLeave blank if no directory is to be ignored."
-		read -p "-> " IGNOREDIR
-		
-		$ECHO_CMD -e "\n\tPreparing the backup. This will take some time ..."
-		$FIND_CMD $DIRNAME -mtime -1 -type f -path $IGNOREDIR -prune -o -print0 | $XARGS_CMD -0 $TAR_CMD -rvf "$FULL_BACKUP.tar" > /dev/null 2>&1
-		if (( "$?" != "0" ))
-		then
-			$ECHO_CMD -e "\n\tError! Check the command syntax for \"find\". Exiting.\n\n"
-			exit 1;
-		fi
-		
-		$ECHO_CMD -e "\n\tCompressing with \"gzip\"."
-		$GZIP_CMD $FULL_BACKUP.tar > /dev/null 2>&1
-		if (( "$?" != "0" ))
-		then
-			$ECHO_CMD -e "\n\tError! Check the command syntax for \"gzip\". Exiting.\n\n"
-			exit 1;
-		fi
-		;;
-	'Q')
-		;&
-	'q')
-		$ECHO_CMD -e "\n\tExit Program\n\n"
-		exit 1;
-		;;
-	*)
-		$ECHO_CMD -e "\n\tUnknown character entered. Exiting!\n\n"
-		exit 1;
-		;;
-esac
+###
+## Compressing the Archives
+###
+
+###
+## Using zstd to compress the archives.
+#
+
+echo -e "\nCompressing with \"zstd\".\n"
+$CMDZSTD -z $FULL_BACKUP.tar > /dev/null 2>&1
 
 
 ###
-###
-###
+## Display an error message if there was a problem compressing the archives.
+#
 
-$ECHO_CMD -e "\n\tBackup has finished!\n\n"
+if (( "$?" != "0" ))
+then
+	echo -e "\nAn error has occurred during the compressing process.\n\n"
+	exit 1;
+fi
+
+
+###
+##
+#
+
+echo -e "\n\tBackup has finished!\n\n"
+
 
 ###
 ## Secondary Selection Menu
