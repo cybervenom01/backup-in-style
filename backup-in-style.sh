@@ -11,7 +11,7 @@
 
 LST_CMDS=( "tar" "zstd" "ssh" "scp" )
 
-if cmds in "${LST_CMDS[@]}";
+for cmds in "${LST_CMDS[@]}";
 do
 	if ! command -v "$cmds" > /dev/null 2>&1;
 	then
@@ -30,14 +30,13 @@ done
 ## Locations of the commands to be used.
 #
 
-CMDFIND=`/usr/bin/find`
-CMDXARGS=`/usr/bin/xargs`
-CMDTAR=`/usr/bin/tar`
-CMDSCP=`/usr/bin/scp`
-CMDZSTD=`/usr/bin/zstd`
-CMDCP=`/usr/bin/cp`
-#CMDECHO=`/usr/bin/echo`
-CMDSSH=`/usr/bin/ssh`
+CMDFIND=/usr/bin/find
+CMDXARGS=/usr/bin/xargs
+CMDTAR=/usr/bin/tar
+CMDSCP=/usr/bin/scp
+CMDZSTD=/usr/bin/zstd
+CMDCP=/usr/bin/cp
+CMDSSH=/usr/bin/ssh
 
 
 ###
@@ -194,9 +193,9 @@ case $CHOICE in
 		echo -e "\n\tYour data is ready to be transfered.\n"
 		$CMDSCP $FULL_BACKUP.tar.zst $SSHUSRNM@$SSHIPADDR:$SSHSTORAGE > /dev/null 2>&1
 
-		if [ ! -e "${SSHSTORAGE}" ] || [ ! -e "${SSHUSR}" ];
+		if [ $? -ne "0" ];
 		then
-			echo -e "\nUnknown remote storage or username.\n\n"
+			echo -e "\nUnknown error. Check syntax of remote storage, IP address, or username.\n\n"
 			exit 1;
 		fi
 		
