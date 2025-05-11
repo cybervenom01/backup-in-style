@@ -177,20 +177,16 @@ case $CHOICE in
 
 		if [ ! -e "${STORAGE}" ];
 		then
-			##NOTE: Find another way to return here if an error occurres to try
-			#       again not exit the program.
 			echo -e "\nUnknown file or directory. Exiting.\n\n"
-			#exit 1;
+			displayUsage
+			exit 1;
 		fi
 		
-		#echo -e "\nYour data has been successfuly transfered.\n\n"
+		echo -e "\nYour data has been successfuly transfered.\n\n"
 		;;
 	2)
 		read -p "Enter the IP address of the SSH server: " SSHIPADDR
 
-		##NOTE: Create a statement where it displays an error message if the
-		# 	IP address is written wrong.
-		
 		read -p "Enter the username of the remote SSH server: " SSHUSRNM
 		
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
@@ -198,24 +194,22 @@ case $CHOICE in
 		echo -e "\n\tYour data is ready to be transfered.\n"
 		$CMDSCP $FULL_BACKUP.tar.zst $SSHUSRNM@$SSHIPADDR:$SSHSTORAGE > /dev/null 2>&1
 
-		##NOTE: Create a statement where it displays an error message if the
-		#	IP address, remote storage location, and the remote username are wrong.
-		#if [ $? -ne "0" ];
-		#then
-		#	echo -e "\n\tError! Check the command syntax for \"scp\". Exiting.\n\n"
-		#	exit 1;
-		#fi
+		if [ ! -e "${SSHSTORAGE}" ] || [ ! -e "${SSHUSR}" ];
+		then
+			echo -e "\nUnknown remote storage or username.\n\n"
+			exit 1;
+		fi
 		
-		#$ECHO_CMD -e "\n\tSecure transfer of your data has finished.\n\n"
+		echo -e "\n\tSecure transfer of your data has finished.\n\n"
 		;;
 	'Q')
 		;&
 	'q')
-		$ECHO_CMD -e "\n\tExit Program\n\n"
+		echo -e "\n\tExit Program\n\n"
 		exit 1;
 		;;
 	*)
-		$ECHO_CMD -e "\n\tUnknown character entered. Exiting.\n\n"
+		echo -e "\n\tUnknown character entered. Exiting.\n\n"
 		exit 1;
 		;;
 esac
