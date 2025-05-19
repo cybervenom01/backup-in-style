@@ -51,6 +51,15 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 
 ###
+## Assign Error Codes To The Variables.
+#
+
+E_UNKFILE=1
+E_UNKCMD=2
+E_INVCMD=123
+
+
+###
 ## Display a Usage Message.
 ###
 
@@ -58,11 +67,11 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 ## Display a usage message.
 #
 
-displayUsage ()
-{
-	echo -e "Usage: $0"
-	echo -e "Use absolute paths: /path/to/file"
-}
+#displayUsage ()
+#{
+#	echo -e "Usage: $0"
+#	echo -e "Use absolute paths: /path/to/file"
+#}
 
 	
 ###
@@ -73,9 +82,9 @@ displayUsage ()
 ## Display the name of the script.
 #
 
-echo -e "\n\t "
+echo -e "\n"
 echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t \n\n"
+echo -e "\t\n\n"
 
 
 ###
@@ -104,9 +113,8 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 
 if [ ! -e "${FILENAME}" ];
 then
-	echo "Unknown file or directory: Does not exist."
-	displayUsage
-	exit 1
+	echo "${FILENAME}: No such file or directory."
+	exit $E_UNKFILE
 fi
 
 
@@ -124,8 +132,8 @@ $CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $
 
 if [ $? -ne "0" ];
 then
-	echo -e "\nAn error has occurred during the archiving process.\n\n"
-	exit 1;
+	echo -e "Invocation of the commands exited with status 1 - 125.\n\n"
+	exit $E_INVCMD;
 fi
 
 
@@ -143,7 +151,7 @@ $CMDZSTD -z $FULL_BACKUP.tar > /dev/null 2>&1
 
 ###
 ## Display an error message if there was a problem compressing the archives.
-#
+##FIXME:
 
 if [ $? -ne "0" ];
 then
