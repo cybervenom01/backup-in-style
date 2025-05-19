@@ -60,7 +60,7 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 displayUsage ()
 {
-	echo -e "Usage: ./$basename"
+	echo -e "Usage: $0"
 	echo -e "Use absolute paths: /path/to/file"
 }
 
