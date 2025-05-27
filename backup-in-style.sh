@@ -51,6 +51,10 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 
 ###
+## Catch and Display Error Messages.
+###
+
+###
 ## Assign Error Codes To The Variables.
 #
 
@@ -60,10 +64,10 @@ E_INVSTAT=123
 
 
 ###
-## Function to display an error message.
+## Function to catch an error.
 #
 
-message_error()
+function catch_Error()
 {
 
 }
@@ -73,7 +77,17 @@ message_error()
 ## Function to display failure.
 #
 
-message_failure()
+function err_Failure()
+{
+
+}
+
+
+###
+## Function which display an error message if the IP address was entered incorrectly.
+#
+
+function validIP()
 {
 
 }
@@ -88,9 +102,9 @@ message_failure()
 #
 
 echo -e "\n"
-echo -e "\t>>>  	$$$	   <<<"
+echo -e "\t>>>  $       $       $  <<<"
 echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t>>>   	$$$	   <<<"
+echo -e "\t>>>  $       $       $  <<<"
 echo -e "\n\n"
 
 
