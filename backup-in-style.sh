@@ -58,28 +58,30 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 ## Assign Error Codes To The Variables.
 #
 
-E_NOTFOUND=1
-E_UNKCOMMAND=2
+E_STAT=1
+E_FILENOTFOUND=2
 E_INVSTAT=123
 
 
 ###
-## Function to catch an error.
+## Function error on file.
 #
 
-function catch_Error()
+function err_File()
 {
-
+	echo -e "An error has occurred: No such file or directory.\n\n"
+	exit $E_FILENOTFOUND
 }
 
 
 ###
-## Function to display failure.
+## Function error invocation of commands.
 #
 
-function err_Failure()
+function err_invocation()
 {
-
+	echo -e "Invocation of the commands exited with status 1 - 125\n\n"
+	exit $E_INVSTAT
 }
 
 
@@ -134,8 +136,7 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 
 if [ ! -e "${FILENAME}" ];
 then
-	echo "${FILENAME}: No such file or directory."
-	exit $E_NOTFOUND;
+	err_File
 fi
 
 
@@ -153,8 +154,7 @@ $CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $
 
 if [ $? -ne "0" ];
 then
-	echo -e "Invocation of the commands exited with status 1 - 125.\n\n"
-	exit $E_INVSTAT;
+	err_invocation
 fi
 
 
@@ -176,8 +176,7 @@ $CMDZSTD -z $FULL_BACKUP.tar > /dev/null 2>&1
 
 if [ ${FULL_BACKUP##*.} != "tar" ];
 then
-	echo "Not a \"tar\" archive.\n\n"
-	exit $E_NOTFOUND;
+	err_File
 fi
 
 
@@ -199,16 +198,19 @@ read -p "-> " CHOICE
 case $CHOICE in
 	1)
 		read -p "Enter the location for the local drive. " STORAGE
-		
+		if [ ! -d "${STORAGE}" ]
+		then
+			err_File
+		fi
+
 		echo -e "\n\tTransfering...\n"
 		$CMDCP $FULL_BACKUP.tar.zst $STORAGE > /dev/null 2>&1
 
-		if [ ${FULL_BACKUP##*.} != "zst" ];
+		if [ ${FULL_BACKUP##*.} != "zst" ]
 		then
-			echo -e "\nNot a \"zst\" compressed archive.\n\n"
-			exit $E_NOTFOUND;
+			err_File
 		fi
-		
+
 		echo -e "\nYour data has been successfuly transfered.\n\n"
 		;;
 	2)
