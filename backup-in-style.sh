@@ -78,7 +78,7 @@ function err_File()
 ## Function error invocation of commands.
 #
 
-function err_invocation()
+function err_Invocation()
 {
 	echo -e "Invocation of the commands exited with status 1 - 125\n\n"
 	exit $E_INVSTAT
@@ -91,7 +91,18 @@ function err_invocation()
 
 function validIP()
 {
+	case "$*" in
+		""|*[!0-9.]*|*[!0-9])
+			return 1
+			;;
+	esac
 
+	local IFS=.
+
+	set -- $*
+
+	[ $# -eq 4 ] && [ ${1:-666} -le 255 ] && [ ${2:-666} -le 255 ] && \
+		[ ${3:-666} -le 255 ] && [ ${4:-666} -le 254 ]
 }
 
 
@@ -154,7 +165,7 @@ $CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $
 
 if [ $? -ne "0" ];
 then
-	err_invocation
+	err_Invocation
 fi
 
 
@@ -215,16 +226,19 @@ case $CHOICE in
 		;;
 	2)
 		read -p "Enter the IP address of the SSH server: " SSHIPADDR
-		##NOTE: Input validation. Enter the correct IPv4 address in
-		#	the input prompt. If the IP address is written wrong,
-		#	display an error message.
+		
+		if [ ! validIP "$SSHIPADDR" ]
+		then
+			echo -e "$SSHIPADDR: Invalid IP address: Make sure you entered the correct IP address."
+		fi
+
 		read -p "Enter the username of the remote SSH server: " SSHUSRNM
 
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
 		$CMDSCP $FULL_BACKUP.tar.zst $SSHUSRNM@$SSHIPADDR:$SSHSTORAGE > /dev/null 2>&1
-
+		##NOTE: Check input validation for the remote user and directory.
 		if [ $? -ne "0" ];
 		then
 			echo -e "\nAn error has occurred. Make sure the IP address corresponds to the SSH server"
