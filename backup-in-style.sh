@@ -59,7 +59,7 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 #
 
 #E_STAT=1
-E_FILENOTFOUND=2
+E_NOTFOUND=2
 E_INVSTAT=123
 
 
@@ -69,8 +69,8 @@ E_INVSTAT=123
 
 function err_File()
 {
-	echo -e "An error has occurred: No such file or directory.\n\n"
-	exit $E_FILENOTFOUND
+	echo -e "Error [$E_NOTFOUND]: No such file or directory.\n\n"
+	exit $E_NOTFOUND
 }
 
 
@@ -80,7 +80,7 @@ function err_File()
 
 function err_Invocation()
 {
-	echo -e "Invocation of the commands exited with status 1 - 125\n\n"
+	echo -e "Error [$E_INVSTAT]: Invocation of the commands exited with status 1 - 125\n\n"
 	exit $E_INVSTAT
 }
 
@@ -133,22 +133,22 @@ read -p "Choose which file or directory to archive: " FILENAME
 
 
 ###
+## Input Validation
+#
+
+if [ ! -e "${FILENAME}" ]
+then
+	err_File
+fi
+
+
+###
 ## Choos a file or directory to ignore.
 #
 
 
 echo -e "\nYou can leave this empty if you don't want to ignore any files or directories.\n"
 read -p "Choose which file or directory to ignore: " IGNOREFILE
-
-
-###
-## Input validation
-#
-
-if [ ! -e "${FILENAME}" ];
-then
-	err_File
-fi
 
 
 ###
@@ -178,14 +178,18 @@ fi
 #
 
 echo -e "\nCompressing with \"zstd\".\n"
-$CMDZSTD -z $FULL_BACKUP.tar > /dev/null 2>&1
+$CMDZSTD -z ${FULL_BACKUP} > /dev/null 2>&1
 
 
 ###
 ## Display an error message if there was a problem compressing the archives.
 #
-
-if [ ${FULL_BACKUP##*.} != "tar" ];
+##NOTE: For some reason, this variable name doesn't show the '.tar' extension.
+##	It executes and displays the error message. It does what it's supposed
+##	to do but why? Maybe I have to go back to where the use of 'tar' is being
+##	executed. Or it has to do something with the way the variables and values
+##	are being used.
+if [ "${FULL_BACKUP##*.}" != "tar" ];
 then
 	err_File
 fi
@@ -241,8 +245,10 @@ case $CHOICE in
 
 		if [ $? -ne "0" ];
 		then
-			echo -e "Exit on error: Unknown username or no route to host.\n\n"
-			exit 98
+			echo -e "Error [$?]: Failed to connect to the SSH server.\n"
+			echo -e "Suggestions: Make sure you are using the correct username.\n"
+			echo -e "\tCheck your network connection and sever status.\n\n"
+			exit 255
 		fi
 		
 		echo -e "\n\tSecure transfer of your data has finished.\n\n"
