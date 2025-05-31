@@ -58,7 +58,7 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 ## Assign Error Codes To The Variables.
 #
 
-E_STAT=1
+#E_STAT=1
 E_FILENOTFOUND=2
 E_INVSTAT=123
 
@@ -237,14 +237,12 @@ case $CHOICE in
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
-		$CMDSCP $FULL_BACKUP.tar.zst $SSHUSRNM@$SSHIPADDR:$SSHSTORAGE > /dev/null 2>&1
-		##NOTE: Check input validation for the remote user and directory.
+		$CMDSCP $FULL_BACKUP.tar.zst iscp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
+
 		if [ $? -ne "0" ];
 		then
-			echo -e "\nAn error has occurred. Make sure the IP address corresponds to the SSH server"
-			echo -e "you are trying to communicate with. Also check if the username is not misspelled,"
-			echo -e " and the username exists in the corresponding SSH server.\n\n"
-			exit 1;
+			echo -e "Exit on error: Unknown username or no route to host.\n\n"
+			exit 98
 		fi
 		
 		echo -e "\n\tSecure transfer of your data has finished.\n\n"
