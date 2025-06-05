@@ -156,7 +156,7 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 #
 
 echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf ${FULL_BACKUP}.tar ${FILENAME} > /dev/null 2>&1
+$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf ${ARCHIVE_BACKUP}.tar ${FILENAME} > /dev/null 2>&1
 
 
 ###
@@ -178,18 +178,15 @@ fi
 #
 
 echo -e "\nCompressing with \"zstd\".\n"
-$CMDZSTD -z ${FULL_BACKUP} > /dev/null 2>&1
+$CMDZSTD -z $ARCHIVE_BACKUP.tar > /dev/null 2>&1
 
 
 ###
 ## Display an error message if there was a problem compressing the archives.
 #
-##NOTE: For some reason, this variable name doesn't show the '.tar' extension.
-##	It executes and displays the error message. It does what it's supposed
-##	to do but why? Maybe I have to go back to where the use of 'tar' is being
-##	executed. Or it has to do something with the way the variables and values
-##	are being used.
-if [ "${FULL_BACKUP##*.}" != "tar" ];
+
+#if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
+if [ $? -ne "0" ]
 then
 	err_File
 fi
@@ -213,6 +210,7 @@ read -p "-> " CHOICE
 case $CHOICE in
 	1)
 		read -p "Enter the location for the local drive. " STORAGE
+		
 		if [ ! -d "${STORAGE}" ]
 		then
 			err_File
@@ -221,7 +219,8 @@ case $CHOICE in
 		echo -e "\n\tTransfering...\n"
 		$CMDCP $FULL_BACKUP.tar.zst $STORAGE > /dev/null 2>&1
 
-		if [ ${FULL_BACKUP##*.} != "zst" ]
+		#if [ ${FULL_BACKUP##*.} != "zst" ]
+		if [ $? -ne "0" ]
 		then
 			err_File
 		fi
@@ -231,7 +230,7 @@ case $CHOICE in
 	2)
 		read -p "Enter the IP address of the SSH server: " SSHIPADDR
 		
-		if [ ! validIP "$SSHIPADDR" ]
+		if ! validIP "$SSHIPADDR"
 		then
 			echo -e "$SSHIPADDR: Invalid IP address: Make sure you entered the correct IP address."
 		fi
@@ -241,13 +240,13 @@ case $CHOICE in
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
-		$CMDSCP $FULL_BACKUP.tar.zst iscp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
-
+		$CMDSCP $FULL_BACKUP.tar.zst scp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
+		##NOTE: The message that display error message might not be displaying the correct error status.
 		if [ $? -ne "0" ];
 		then
 			echo -e "Error [$?]: Failed to connect to the SSH server.\n"
 			echo -e "Suggestions: Make sure you are using the correct username.\n"
-			echo -e "\tCheck your network connection and sever status.\n\n"
+			echo -e "\tCheck your network connection and server status.\n\n"
 			exit 255
 		fi
 		
