@@ -115,9 +115,9 @@ function validIP()
 #
 
 echo -e "\n"
-echo -e "\t>>>  $       $       $  <<<"
+echo -e "\t>>> $ =============== $ <<<"
 echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t>>>  $       $       $  <<<"
+echo -e "\t>>> $ =============== $ <<<"
 echo -e "\n\n"
 
 
@@ -156,7 +156,7 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 #
 
 echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf ${ARCHIVE_BACKUP}.tar ${FILENAME} > /dev/null 2>&1
+$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
 
 
 ###
@@ -198,7 +198,7 @@ fi
 
 ###
 ## Select Storage Location.
-##FIXME: Create the necessary error messages for the following statements.
+#
 
 echo -e "Choose where to send files.\n"
 echo -e "\t1 - Local Drive\n"
@@ -241,12 +241,12 @@ case $CHOICE in
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
 		$CMDSCP $FULL_BACKUP.tar.zst scp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
-		##NOTE: The message that display error message might not be displaying the correct error status.
+		
 		if [ $? -ne "0" ];
 		then
-			echo -e "Error [$?]: Failed to connect to the SSH server.\n"
-			echo -e "Suggestions: Make sure you are using the correct username.\n"
-			echo -e "\tCheck your network connection and server status.\n\n"
+			echo -e "Error [255]: Failed to connect to the SSH server.\n"
+			echo -e "Make sure you are using the correct username.\n"
+			echo -e "Check your network connection and server status.\n\n"
 			exit 255
 		fi
 		
