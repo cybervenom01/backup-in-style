@@ -1,34 +1,32 @@
 # Backup In Style
 
-![License](https://img.shields.io/badge/license-MIT-blue)
 ![Bash](https://img.shields.io/badge/language-Bash-lightgrey)
+![GitHub License](https://img.shields.io/github/license/cybervenom01/backup-in-style?style=social)
 
 ## Description
 
-Data loss can occur unexpectedly due to various factors such as accidental deletion,
-data corruption, power outages, malware infections, or inadvertent user actions.
-Implementing regular backup procedures is crucial to safeguard important information.
-
-"Backup In Style" is an interactive Bash script designed to facilitate the secure
-backup of user-specified data. Upon execution, the script prompts the user for necessary
-input, providing clear and user-friendly instructions to guide the process. It then
-compresses the selected files or directories into a .tar.gz archive, ensuring efficient
-storage and integrity of the backed-up data.
-
-The script's codebase includes comprehensive comments to enhance readability and
-understanding, making it accessible for users who wish to review or modify its
-functionality.
-
-By utilizing "Backup in Style", users can establish a reliable and streamlined approach
-to data preservation, mitigating the risks associated with data loss incidents.
-
+Backup In Style is a lightweight, modular Bash script built for efficient
+and secure file backups on Linux and Unix-like systems. It's designed
+for technical users and small businesses that need a no-nonsense solution
+to automate routine backups while maintaining full control over the processes.
 
 ## Features
 
 - Interactive and user-friendly
-- Supports file and directory selection
-- Creates compressed `.tar.gz` archives
-- Commented for ease of customization
+- Secure remote transfers via SSH
+- Creates compressed `.tar.zst` archives
+- Clean, readable code for easy customization
+
+
+## Upcoming Features
+
+- Color-coded terminal output for enhanced status visibility and error handling
+- Cron integration for scheduled, automated backups
+- Detailed logging for audits and troubleshooting
+
+Whether you're managing personal systems or business infrastructure, Backup In
+Style offers a dependable foundation with room to grow - built with clarity,
+security, and extensibility in mind.
 
 
 ## Installation
@@ -37,19 +35,24 @@ to data preservation, mitigating the risks associated with data loss incidents.
 
 `cd backup-in-style`
 
-`chmod +x backup.sh`
+`chmod u+x backup-in-style.sh`
 
 
 ## Usage
 
-`./backup.sh`
+`./backup-in-style.sh`
 
 ``` Bash
-Welcome to Backup in Style!
+>>> $ =============== $ <<<
+>>> { Backup In Style } <<<
+>>> $ =============== $ <<<
+
+
 
 Enter the directory or file you want to backup: /home/user/directory
 
-Enter a name for the backup: docs_backup
+You can leave this empty if you don't want to ignore any files.
+Enter the name of the file or directory to ignore: /file/to/ignore
 
 Creating archive...
 
@@ -58,4 +61,4 @@ Backup complete: docs_backup.tar.gz
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License - see the [LICENSE](LICENSE) file for details.
