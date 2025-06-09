@@ -51,20 +51,61 @@ FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
 
 
 ###
-## Display a Usage Message.
+## Catch and Display Error Messages.
 ###
 
 ###
-## Display a usage message.
+## Assign Error Codes To The Variables.
 #
 
-displayUsage ()
+#E_STAT=1
+E_NOTFOUND=2
+E_INVSTAT=123
+
+
+###
+## Function error on file.
+#
+
+function err_File()
 {
-	echo -e "Usage: ./$basename"
-	echo -e "Use absolute paths: /path/to/file"
+	echo -e "Error [$E_NOTFOUND]: No such file or directory.\n\n"
+	exit $E_NOTFOUND
 }
 
-	
+
+###
+## Function error invocation of commands.
+#
+
+function err_Invocation()
+{
+	echo -e "Error [$E_INVSTAT]: Invocation of the commands exited with status 1 - 125\n\n"
+	exit $E_INVSTAT
+}
+
+
+###
+## Function which display an error message if the IP address was entered incorrectly.
+#
+
+function validIP()
+{
+	case "$*" in
+		""|*[!0-9.]*|*[!0-9])
+			return 1
+			;;
+	esac
+
+	local IFS=.
+
+	set -- $*
+
+	[ $# -eq 4 ] && [ ${1:-666} -le 255 ] && [ ${2:-666} -le 255 ] && \
+		[ ${3:-666} -le 255 ] && [ ${4:-666} -le 254 ]
+}
+
+
 ###
 ## Display a Title
 ###
@@ -73,9 +114,11 @@ displayUsage ()
 ## Display the name of the script.
 #
 
-echo -e "\n\t "
+echo -e "\n"
+echo -e "\t>>> $ =============== $ <<<"
 echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t \n\n"
+echo -e "\t>>> $ =============== $ <<<"
+echo -e "\n\n"
 
 
 ###
@@ -90,6 +133,16 @@ read -p "Choose which file or directory to archive: " FILENAME
 
 
 ###
+## Input Validation
+#
+
+if [ ! -e "${FILENAME}" ]
+then
+	err_File
+fi
+
+
+###
 ## Choos a file or directory to ignore.
 #
 
@@ -99,23 +152,11 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 
 
 ###
-## Input validation
-#
-
-if [ ! -e "${FILENAME}" ];
-then
-	echo "Unknown file or directory: Does not exist."
-	displayUsage
-	exit 1
-fi
-
-
-###
 ## Creating the backup archive.
 #
 
 echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf ${FULL_BACKUP}.tar ${FILENAME} > /dev/null 2>&1
+$CMDFIND ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
 
 
 ###
@@ -124,8 +165,7 @@ $CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $
 
 if [ $? -ne "0" ];
 then
-	echo -e "\nAn error has occurred during the archiving process.\n\n"
-	exit 1;
+	err_Invocation
 fi
 
 
@@ -138,17 +178,17 @@ fi
 #
 
 echo -e "\nCompressing with \"zstd\".\n"
-$CMDZSTD -z $FULL_BACKUP.tar > /dev/null 2>&1
+$CMDZSTD -z $ARCHIVE_BACKUP.tar > /dev/null 2>&1
 
 
 ###
 ## Display an error message if there was a problem compressing the archives.
 #
 
-if [ $? -ne "0" ];
+#if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
+if [ $? -ne "0" ]
 then
-	echo -e "\nAn error has occurred during the compression process.\n\n"
-	exit 1;
+	err_File
 fi
 
 
@@ -171,32 +211,43 @@ case $CHOICE in
 	1)
 		read -p "Enter the location for the local drive. " STORAGE
 		
+		if [ ! -d "${STORAGE}" ]
+		then
+			err_File
+		fi
+
 		echo -e "\n\tTransfering...\n"
 		$CMDCP $FULL_BACKUP.tar.zst $STORAGE > /dev/null 2>&1
 
-		if [ ! -e "${STORAGE}" ];
+		#if [ ${FULL_BACKUP##*.} != "zst" ]
+		if [ $? -ne "0" ]
 		then
-			echo -e "\nUnknown file or directory. Exiting.\n\n"
-			displayUsage
-			exit 1;
+			err_File
 		fi
-		
+
 		echo -e "\nYour data has been successfuly transfered.\n\n"
 		;;
 	2)
 		read -p "Enter the IP address of the SSH server: " SSHIPADDR
+		
+		if ! validIP "$SSHIPADDR"
+		then
+			echo -e "$SSHIPADDR: Invalid IP address: Make sure you entered the correct IP address."
+		fi
 
 		read -p "Enter the username of the remote SSH server: " SSHUSRNM
-		
+
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
-		$CMDSCP $FULL_BACKUP.tar.zst $SSHUSRNM@$SSHIPADDR:$SSHSTORAGE > /dev/null 2>&1
-
+		$CMDSCP $FULL_BACKUP.tar.zst scp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
+		
 		if [ $? -ne "0" ];
 		then
-			echo -e "\nUnknown error. Check syntax of remote storage, IP address, or username.\n\n"
-			exit 1;
+			echo -e "Error [255]: Failed to connect to the SSH server.\n"
+			echo -e "Make sure you are using the correct username.\n"
+			echo -e "Check your network connection and server status.\n\n"
+			exit 255
 		fi
 		
 		echo -e "\n\tSecure transfer of your data has finished.\n\n"
@@ -205,10 +256,12 @@ case $CHOICE in
 		;&
 	'q')
 		echo -e "\n\tExit Program\n\n"
-		exit 1;
+		exit 0;
 		;;
 	*)
 		echo -e "\n\tUnknown character entered. Exiting.\n\n"
 		exit 1;
 		;;
 esac
+
+exit 0
