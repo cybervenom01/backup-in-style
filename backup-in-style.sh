@@ -156,7 +156,7 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 #
 
 echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f -path ${IGNOREFILE} -prune -o -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
+$CMDFIND ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
 
 
 ###
@@ -263,3 +263,5 @@ case $CHOICE in
 		exit 1;
 		;;
 esac
+
+exit 0
