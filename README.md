@@ -1,5 +1,6 @@
 # Backup In Style
 
+![Backup In Style Logo](./Images/backup-in-style-logo-0004.svg)
 ![Bash](https://img.shields.io/badge/language-Bash-lightgrey)
 ![GitHub License](https://img.shields.io/github/license/cybervenom01/backup-in-style?style=social)
 
@@ -56,7 +57,7 @@ Enter the name of the file or directory to ignore: /file/to/ignore
 
 Creating archive...
 
-Backup complete: docs_backup.tar.gz
+Backup complete: docs_backup.tar.zst
 ```
 
 ## License
