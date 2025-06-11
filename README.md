@@ -13,6 +13,11 @@ and secure file backups on Linux and Unix-like systems. It's designed
 for technical users and small businesses that need a no-nonsense solution
 to automate routine backups while maintaining full control over the processes.
 
+Whether you're managing personal systems or business infrastructure, Backup In
+Style offer a dependable foundation with room to grow - built with clarity,
+security, and extensibility in mind.
+
+
 ## Features
 
 - Interactive and user-friendly
@@ -26,10 +31,6 @@ to automate routine backups while maintaining full control over the processes.
 - Color-coded terminal output for enhanced status visibility and error handling
 - Cron integration for scheduled, automated backups
 - Detailed logging for audits and troubleshooting
-
-Whether you're managing personal systems or business infrastructure, Backup In
-Style offers a dependable foundation with room to grow - built with clarity,
-security, and extensibility in mind.
 
 
 ## Installation
