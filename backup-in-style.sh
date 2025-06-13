@@ -69,7 +69,7 @@ E_INVSTAT=123
 
 function err_File()
 {
-	echo -e "Error [$E_NOTFOUND]: No such file or directory.\n\n"
+	echo -e "Error [\033[0;31m$E_NOTFOUND\033[0;0m]: No such file or directory.\n\n"
 	exit $E_NOTFOUND
 }
 
@@ -80,7 +80,7 @@ function err_File()
 
 function err_Invocation()
 {
-	echo -e "Error [$E_INVSTAT]: Invocation of the commands exited with status 1 - 125\n\n"
+	echo -e "Error [\033[0;31m$E_INVSTAT\033[0;0m]: Invocation of the commands exited with status 1 - 125\n\n"
 	exit $E_INVSTAT
 }
 
@@ -232,7 +232,8 @@ case $CHOICE in
 		
 		if ! validIP "$SSHIPADDR"
 		then
-			echo -e "$SSHIPADDR: Invalid IP address: Make sure you entered the correct IP address."
+			echo -e "\033[0;31m$SSHIPADDR\033[0;0m: Invalid IP address: Make sure you entered the correct IP address."
+			exit 61
 		fi
 
 		read -p "Enter the username of the remote SSH server: " SSHUSRNM
