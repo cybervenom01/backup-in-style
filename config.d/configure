@@ -1,0 +1,50 @@
+#!/bin/bash
+
+###
+## Main Configuration File.
+###
+
+###
+## Variables Configuration
+#
+
+ROOT_UID=0
+E_UID=1
+
+
+###
+## Check if the configuration file is run as root.
+#
+
+if [ "$UID" -ne "$ROOT_UID" ]
+then
+	echo -e "\n\n"
+	echo -e "Please run this script with \033[0;31mroot\033[0;0m privileges.\n\n"
+	exit $E_UID
+fi
+
+
+###
+## Searches for the commands which help to compress, archive, and remotely transfer your data.
+#
+
+echo -e "\nChecking for comands: \n"
+
+LST_CMDS=( "tar" "zstd" "ssh" "scp" )
+
+for cmds in "${LST_CMDS[@]}";
+do
+	echo -e "$cmds . . ."
+
+        if ! command -v "$cmds" > /dev/null 2>&1;
+        then
+                echo "$cmds not found"
+                echo "Please install the corresponding packages."
+                exit 0
+        fi
+done
+
+echo -e "All commands are account for."
+
+
+##NOTE: You can copy the main script to '/usr/local/bin' directory.

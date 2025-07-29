@@ -2,6 +2,13 @@
 ##
 
 ###
+## Source Files.
+###
+
+source config/backup.conf
+
+
+###
 ## Commands for the script to function.
 ###
 
@@ -43,11 +50,11 @@ CMDSSH=/usr/bin/ssh
 ## Assigning Names for the Backup Files
 #
 
-USR=$( whoami )
-HOST=$( uname -n )
-TIMESTAMP=$(date +%d%m%Y-%H%M%S)
-ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
-FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
+#USR=$( whoami )
+#HOST=$( uname -n )
+#TIMESTAMP=$( date +%Y%m%d-%H%M%S )
+#ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
+FULL_BACKUP=${1:-${ARCHIVE_BACKUP}}
 
 
 ###
@@ -156,7 +163,7 @@ read -p "Choose which file or directory to ignore: " IGNOREFILE
 #
 
 echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
+${CMDFIND} ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | ${CMDXARGS} -0 ${CMDTAR} -rf ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
 
 
 ###
@@ -178,7 +185,7 @@ fi
 #
 
 echo -e "\nCompressing with \"zstd\".\n"
-$CMDZSTD -z $ARCHIVE_BACKUP.tar > /dev/null 2>&1
+${CMDZSTD} -z ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
 
 
 ###
@@ -217,7 +224,7 @@ case $CHOICE in
 		fi
 
 		echo -e "\n\tTransfering...\n"
-		$CMDCP $FULL_BACKUP.tar.zst $STORAGE > /dev/null 2>&1
+		${CMDCP} ${FULL_BACKUP}.tar.zst ${STORAGE} > /dev/null 2>&1
 
 		#if [ ${FULL_BACKUP##*.} != "zst" ]
 		if [ $? -ne "0" ]
@@ -241,7 +248,7 @@ case $CHOICE in
 		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
 		echo -e "\n\tYour data is ready to be transfered.\n"
-		$CMDSCP $FULL_BACKUP.tar.zst scp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
+		${CMDSCP} ${FULL_BACKUP}.tar.zst scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
 		
 		if [ $? -ne "0" ];
 		then
