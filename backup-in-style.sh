@@ -2,34 +2,6 @@
 ##
 
 ###
-## Source Files.
-###
-
-source config/backup.conf
-
-
-###
-## Commands for the script to function.
-###
-
-###
-## Searches for the commands which help to compress, archive, and remotely transfer your data.
-#
-
-LST_CMDS=( "tar" "zstd" "ssh" "scp" )
-
-for cmds in "${LST_CMDS[@]}";
-do
-	if ! command -v "$cmds" > /dev/null 2>&1;
-	then
-		echo "$cmds not found"
-		echo "Please install the corresponding packages."
-		exit 0
-	fi
-done
-
-
-###
 ## Configuring the values into the variables.
 ###
 
@@ -50,10 +22,10 @@ CMDSSH=/usr/bin/ssh
 ## Assigning Names for the Backup Files
 #
 
-#USR=$( whoami )
-#HOST=$( uname -n )
-#TIMESTAMP=$( date +%Y%m%d-%H%M%S )
-#ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
+USR=$( whoami )
+HOST=$( uname -n )
+TIMESTAMP=$( date +%Y%m%d-%H%M%S )
+ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
 FULL_BACKUP=${1:-${ARCHIVE_BACKUP}}
 
 
@@ -70,6 +42,10 @@ E_NOTFOUND=2
 E_INVSTAT=123
 
 
+###
+## Creating Functions
+###
+##TODO: Create a function for archiving and compressing files.
 ###
 ## Function error on file.
 #
@@ -118,14 +94,28 @@ function validIP()
 ###
 
 ###
-## Display the name of the script.
+## The function which displays the title of the script.
 #
 
-echo -e "\n"
-echo -e "\t>>> $ =============== $ <<<"
-echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t>>> $ =============== $ <<<"
-echo -e "\n\n"
+function displayTitle()
+{
+	echo -e "\n"
+	echo -e "\t>>> $ =============== $ <<<"
+	echo -e "\t>>> { Backup In Style } <<<"
+	echo -e "\t>>> $ =============== $ <<<"
+	echo -e "\n\n"
+}
+
+
+###
+## Main Menu
+###
+##TODO: Configure the variables for each one.
+###
+## Menu to Choose Full Backup, Incremental Backups, Or Restore From Backups
+#
+
+printf "Choose whether you want a Full Backup, Incremental Backup, or Restore from Backup"
 
 
 ###

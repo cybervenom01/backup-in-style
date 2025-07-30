@@ -48,3 +48,13 @@ echo -e "All commands are account for."
 
 
 ##NOTE: You can copy the main script to '/usr/local/bin' directory.
+
+###
+## Copy main script into /usr/local/bin
+## Make sure it has the correct file permissions
+## and its executable.
+#
+
+cp ../backup-in-style.sh /usr/local/bin
+
+chmod 755 /usr/local/bin/backup-in-style.sh
