@@ -1,5 +1,4 @@
-#!/usr/bin/bash
-##
+#!/bin/sh
 
 ###
 ## Configuring the values into the variables.
@@ -20,51 +19,42 @@ CMDSSH=/usr/bin/ssh
 
 ###
 ## Assigning Names for the Backup Files
+###
+
+###
+## Variable names for Full Backup
 #
 
 USR=$( whoami )
 HOST=$( uname -n )
 TIMESTAMP=$( date +%Y%m%d-%H%M%S )
-ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
-FULL_BACKUP=${1:-${ARCHIVE_BACKUP}}
+FULL_BACKUP=${USR}-${HOST}-FULL-BACKUP-${TIMESTAMP}
 
 
 ###
-## Catch and Display Error Messages.
-###
-
-###
-## Assign Error Codes To The Variables.
+## Variable names for Incremental Backups
 #
 
-#E_STAT=1
-E_NOTFOUND=2
-E_INVSTAT=123
+WEEKDAY_NAME=$( date +%a )
+INCREMENTAL_BACKUP=${USER}-${HOST}-INCREMENTAL-${WEEKDAY_NAME}-${TIMESTAMP}
 
 
 ###
-## Creating Functions
+## Error Handling
 ###
-##TODO: Create a function for archiving and compressing files.
+
 ###
-## Function error on file.
+## Show error status and exit
 #
 
-function err_File()
+exit_status=$?
+
+trap 'exit_error $exit_status $LINENO' ERR
+
+exit_error()
 {
-	echo -e "Error [\033[0;31m$E_NOTFOUND\033[0;0m]: No such file or directory.\n\n"
-	exit $E_NOTFOUND
-}
-
-
-###
-## Function error invocation of commands.
-#
-
-function err_Invocation()
-{
-	echo -e "Error [\033[0;31m$E_INVSTAT\033[0;0m]: Invocation of the commands exited with status 1 - 125\n\n"
-	exit $E_INVSTAT
+	printf "Error: [\033[0;31m( $1 )\033[0;0m] occurred on $2"
+	exit $exit_status
 }
 
 
@@ -133,10 +123,10 @@ read -p "Choose which file or directory to archive: " FILENAME
 ## Input Validation
 #
 
-if [ ! -e "${FILENAME}" ]
-then
-	err_File
-fi
+#if [ ! -e "${FILENAME}" ]
+#then
+#	err_File
+#fi
 
 
 ###
@@ -160,10 +150,10 @@ ${CMDFIND} ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a
 ## Display an error message if there was a problem archiving the files.
 #
 
-if [ $? -ne "0" ];
-then
-	err_Invocation
-fi
+#if [ $? -ne "0" ];
+#then
+#	err_Invocation
+#fi
 
 
 ###
@@ -182,11 +172,11 @@ ${CMDZSTD} -z ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
 ## Display an error message if there was a problem compressing the archives.
 #
 
-#if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
-if [ $? -ne "0" ]
-then
-	err_File
-fi
+##if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
+#if [ $? -ne "0" ]
+#then
+#	err_File
+#fi
 
 
 ###
@@ -208,19 +198,19 @@ case $CHOICE in
 	1)
 		read -p "Enter the location for the local drive. " STORAGE
 		
-		if [ ! -d "${STORAGE}" ]
-		then
-			err_File
-		fi
+		#if [ ! -d "${STORAGE}" ]
+		#then
+		#	err_File
+		#fi
 
 		echo -e "\n\tTransfering...\n"
 		${CMDCP} ${FULL_BACKUP}.tar.zst ${STORAGE} > /dev/null 2>&1
 
 		#if [ ${FULL_BACKUP##*.} != "zst" ]
-		if [ $? -ne "0" ]
-		then
-			err_File
-		fi
+		#if [ $? -ne "0" ]
+		#then
+		#	err_File
+		#fi
 
 		echo -e "\nYour data has been successfuly transfered.\n\n"
 		;;
@@ -240,13 +230,13 @@ case $CHOICE in
 		echo -e "\n\tYour data is ready to be transfered.\n"
 		${CMDSCP} ${FULL_BACKUP}.tar.zst scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
 		
-		if [ $? -ne "0" ];
-		then
-			echo -e "Error [255]: Failed to connect to the SSH server.\n"
-			echo -e "Make sure you are using the correct username.\n"
-			echo -e "Check your network connection and server status.\n\n"
-			exit 255
-		fi
+		#if [ $? -ne "0" ];
+		#then
+		#	echo -e "Error [255]: Failed to connect to the SSH server.\n"
+		#	echo -e "Make sure you are using the correct username.\n"
+		#	echo -e "Check your network connection and server status.\n\n"
+		#	exit 255
+		#fi
 		
 		echo -e "\n\tSecure transfer of your data has finished.\n\n"
 		;;
