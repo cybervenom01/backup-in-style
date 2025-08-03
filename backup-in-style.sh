@@ -18,6 +18,18 @@ CMDSSH=/usr/bin/ssh
 
 
 ###
+## Assigning Names for the Log Directory and File
+##
+
+###
+## Location to log file
+#
+
+LOGFILE="bkstyle.log"
+LOGDIR="/var/log/bkstyle.d"
+
+
+###
 ## Assigning Names for the Backup Files
 ###
 
@@ -51,28 +63,27 @@ trap 'exit_error $? $LINENO' ERR
 
 exit_error()
 {
-	LOGFILE=/var/log/bstyle.d/backup.log
+	##NOTE: You might need to create these as global variables in case this function
+	##	gives you an error.
 	E_STAT=$1
 	LINE_NO=$2
-	E_MSG="ERROR: [\033[0;31m$E_STAT\033[0;0m] occurred on $LINE_NO"
+	E_MSG="$( date +%c ): $( uname -n ): ERROR: [\033[0;31m$E_STAT\033[0;0m] occurred on line $LINE_NO"
 
-	date +%c >> $LOGFILE
-	printf %b "$E_MSG" | tee -a "$LOGFILE"
-
-	exit $E_STAT	# Exit on error; might not need the variable.
+	printf "%b" "$E_MSG" | tee >(sed 's/\x1b\[[0-9;]*m\\g' >> "${LOGDIR}/${LOGFILE}")
+	exit $E_STAT
 }
 
 
 ###
 ## Log Successful Messages Function
-#
-
-DATE_LOG=$( date +%c )
+##NOTE: You can create two different functions to display a successful message when compression is finished
+##	and when the transfer completes.
 
 successMessage()
 {
-	printf $DATE_LOG > /var/log/backup.d/backup.log
-	printf "Your data has been securely backed up." >> /var/log/backup.d/backup.log
+	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data compression and transfer successful.\n"
+
+	printf "%b" "$S_MSG" | tee -a "${LOGDIR}/${LOGFILE}"
 }
 
 
