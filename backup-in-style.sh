@@ -45,16 +45,34 @@ INCREMENTAL_BACKUP=${USER}-${HOST}-INCREMENTAL-${WEEKDAY_NAME}-${TIMESTAMP}
 
 ###
 ## Show error status and exit
-#
+##TODO: Make sure to test these functions. Also, log these error messages to a file.
 
-exit_status=$?
-
-trap 'exit_error $exit_status $LINENO' ERR
+trap 'exit_error $? $LINENO' ERR
 
 exit_error()
 {
-	printf "Error: [\033[0;31m( $1 )\033[0;0m] occurred on $2"
-	exit $exit_status
+	LOGFILE=/var/log/bstyle.d/backup.log
+	E_STAT=$1
+	LINE_NO=$2
+	E_MSG="ERROR: [\033[0;31m$E_STAT\033[0;0m] occurred on $LINE_NO"
+
+	date +%c >> $LOGFILE
+	printf %b "$E_MSG" | tee -a "$LOGFILE"
+
+	exit $E_STAT	# Exit on error; might not need the variable.
+}
+
+
+###
+## Log Successful Messages Function
+#
+
+DATE_LOG=$( date +%c )
+
+successMessage()
+{
+	printf $DATE_LOG > /var/log/backup.d/backup.log
+	printf "Your data has been securely backed up." >> /var/log/backup.d/backup.log
 }
 
 
