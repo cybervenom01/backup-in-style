@@ -67,9 +67,9 @@ exit_error()
 	##	gives you an error.
 	E_STAT=$1
 	LINE_NO=$2
-	E_MSG="$( date +%c ): $( uname -n ): ERROR: [\033[0;31m$E_STAT\033[0;0m] occurred on line $LINE_NO"
+	E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
 
-	printf "%b" "$E_MSG" | tee >(sed 's/\x1b\[[0-9;]*m\\g' >> "${LOGDIR}/${LOGFILE}")
+	printf "%b" "$E_MSG" | tee >> "${LOGDIR}/${LOGFILE}"
 	exit $E_STAT
 }
 
@@ -83,13 +83,13 @@ successMessage()
 {
 	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data compression and transfer successful.\n"
 
-	printf "%b" "$S_MSG" | tee -a "${LOGDIR}/${LOGFILE}"
+	printf "%b" "$S_MSG" | tee >> "${LOGDIR}/${LOGFILE}"
 }
 
 
 ###
 ## Function which display an error message if the IP address was entered incorrectly.
-#
+##FIXME: Make this POSIX complaint.
 
 function validIP()
 {
@@ -114,15 +114,11 @@ function validIP()
 
 ###
 ## The function which displays the title of the script.
-#
+##TODO: Choose at random which ascii art to display.
 
-function displayTitle()
+asciiArt()
 {
-	echo -e "\n"
-	echo -e "\t>>> $ =============== $ <<<"
-	echo -e "\t>>> { Backup In Style } <<<"
-	echo -e "\t>>> $ =============== $ <<<"
-	echo -e "\n\n"
+	cat ../ascii/ascii-art-v1.txt
 }
 
 
