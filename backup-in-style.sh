@@ -115,11 +115,45 @@ function validIP()
 ###
 ## The function which displays the title of the script.
 ##TODO: Choose at random which ascii art to display.
+##NOTES: Ideas: Use /dev/urandom maybe can help you choose a file.
+##	 Use an array for a list of filenames.
+##	 Use a 'for' loop.
+##	 Use globbing.
+
+ASCIIDIR="../ascii"
 
 asciiArt()
 {
-	cat ../ascii/ascii-art-v1.txt
+	find ${ASCIIDIR} -maxdepth 1 -type f -print | sort -R | tail -n 1 | while read file ; do cat $file; done
 }
+
+
+###
+## Function to Archive files
+##TODO: Choose files to archive.
+##NOTE: You can also use this same function to compress the archives.
+
+archiveFiles()
+{
+	printf "Archiving files"
+}
+
+
+###
+## Compressing Files
+#
+
+compressArchives()
+{
+	printf "Compressing Archives"
+}
+
+
+###
+## Call Function to display ascii art.
+#
+
+asciiArt
 
 
 ###
@@ -130,7 +164,55 @@ asciiArt()
 ## Menu to Choose Full Backup, Incremental Backups, Or Restore From Backups
 #
 
-printf "Choose whether you want a Full Backup, Incremental Backup, or Restore from Backup"
+while true
+do
+	printf "Choose a Backup Method: "
+	printf "1 - Full Backup"
+	printf "2 - Incremental Backup"
+	printf "3 - Restore From Backup"
+	printf "Q - Exit the Script"
+
+	read -p "-> " backup
+
+	case $backup in
+		"1"	)
+			##TODO: Choose the location to archives files and directories.
+			##	Use an array with all the files and directories to archive.
+			##	Archive and compress the files.
+			##	Choose destination directory to transfer archived files: 
+			##		- Transfer to remote location: SSH
+			##		- Transfer to local drive
+			##	All the archives will have a unique name with day of the week,
+			##	and the time and date.
+			printf "You chose 1: Full Backup"
+			;;
+		"2"	)
+			##TODO: Choose the file or directory you recently modified to archive.
+			##	If the file has not been recently modified it will not be archived.
+			##	Archive and compress the files.
+			##	Choose a destination directory to transfer archived files:
+			##		- Transfer to remote location: SSH
+			##		- Transfer to local drive
+			##	All the archives will have a unique name with day of the week,
+			##	and the time and date.
+			printf "You chose 2: Incremental Backup"
+			;;
+		"3"	)
+			##TODO: Choose the archived file(s) from local drive or remote location
+			##	(SSH) to transfer to your local host.
+			##	Uncompress and unarchive files in current directory.
+			##	Re-run this script to backup files.
+			printf "You chose 3: Restore fom Backup"
+			;;
+		"q" | "Q"	)
+			printf "Exiting Script"
+			break
+			;;
+		*	)
+			printf "Unknown Backup Method"
+			;;
+	esac
+done
 
 
 ###
