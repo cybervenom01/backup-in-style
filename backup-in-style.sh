@@ -52,6 +52,10 @@ INCREMENTAL_BACKUP=${USER}-${HOST}-INCREMENTAL-${WEEKDAY_NAME}-${TIMESTAMP}
 
 
 ###
+## Variable names for Local or Remote locations to transfer archives.
+###
+
+###
 ## Error Handling
 ###
 
@@ -61,7 +65,7 @@ INCREMENTAL_BACKUP=${USER}-${HOST}-INCREMENTAL-${WEEKDAY_NAME}-${TIMESTAMP}
 
 trap 'exit_error $? $LINENO' ERR
 
-exit_error()
+exit_error ()
 {
 	##NOTE: You might need to create these as global variables in case this function
 	##	gives you an error.
@@ -79,7 +83,7 @@ exit_error()
 ##NOTE: You can create two different functions to display a successful message when compression is finished
 ##	and when the transfer completes.
 
-successMessage()
+successMessage ()
 {
 	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data compression and transfer successful.\n"
 
@@ -115,14 +119,14 @@ function validIP()
 ###
 ## The function which displays the title of the script.
 ##TODO: Choose at random which ascii art to display.
-##NOTES: Ideas: Use /dev/urandom maybe can help you choose a file.
+##NOTES: Ideas: Use /dev/urandom or the rand() maybe can help you choose a file.
 ##	 Use an array for a list of filenames.
 ##	 Use a 'for' loop.
 ##	 Use globbing.
 
 ASCIIDIR="../ascii"
 
-asciiArt()
+asciiArt ()
 {
 	find ${ASCIIDIR} -maxdepth 1 -type f -print | sort -R | tail -n 1 | while read file ; do cat $file; done
 }
@@ -133,7 +137,7 @@ asciiArt()
 ##TODO: Choose files to archive.
 ##NOTE: You can also use this same function to compress the archives.
 
-archiveFiles()
+archiveFiles ()
 {
 	printf "Archiving files"
 }
@@ -143,7 +147,7 @@ archiveFiles()
 ## Compressing Files
 #
 
-compressArchives()
+compressArchives ()
 {
 	printf "Compressing Archives"
 }
@@ -172,19 +176,47 @@ do
 	printf "3 - Restore From Backup"
 	printf "Q - Exit the Script"
 
-	read -p "-> " backup
+	read -p "-> " BACKUP
 
-	case $backup in
+	case $BACKUP in
 		"1"	)
-			##TODO: Choose the location to archives files and directories.
+			##TODO: Choose the location where the files are to backup.
 			##	Use an array with all the files and directories to archive.
-			##	Archive and compress the files.
 			##	Choose destination directory to transfer archived files: 
 			##		- Transfer to remote location: SSH
 			##		- Transfer to local drive
+			##	All files will be archived and compressed.
 			##	All the archives will have a unique name with day of the week,
 			##	and the time and date.
-			printf "You chose 1: Full Backup"
+			##	All the compressed files will be transfered to the location
+			##	chosen by the user.
+			printf "You chose to do a Full Backup.\n\n"
+			printf "Choose the directory for the files to backup: "
+
+			read -p "-> " DIRNAME
+
+			printf "You can leave this one empty if don't want to ignore any files or directories"
+			printf "Choose which file or directory you don't want to backup: "
+			
+			read -p "-> " IGNOREFILE
+			
+			printf "Choose the location to transfer the archived files: "
+			printf "1 - SSH\n"
+			printf "2 - Local"
+
+			read -p "-> " STORAGE
+			
+			case $STORAGE in
+				"1" )
+					echo "You have chosen to transfer your files to an SSH server."
+					;;
+				"2" )
+					echo "You have chosen to transfer your files to a local drive."
+					;;
+				* )
+					echo "Unknown location"
+					;;
+			esac
 			;;
 		"2"	)
 			##TODO: Choose the file or directory you recently modified to archive.
@@ -213,36 +245,6 @@ do
 			;;
 	esac
 done
-
-
-###
-## Choose a file or directory to archive and compress.
-###
-
-###
-## Choose a file or directory to archive.
-#
-
-read -p "Choose which file or directory to archive: " FILENAME
-
-
-###
-## Input Validation
-#
-
-#if [ ! -e "${FILENAME}" ]
-#then
-#	err_File
-#fi
-
-
-###
-## Choos a file or directory to ignore.
-#
-
-
-echo -e "\nYou can leave this empty if you don't want to ignore any files or directories.\n"
-read -p "Choose which file or directory to ignore: " IGNOREFILE
 
 
 ###
