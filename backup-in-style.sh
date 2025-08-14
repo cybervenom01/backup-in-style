@@ -137,9 +137,22 @@ asciiArt ()
 ##TODO: Choose files to archive.
 ##NOTE: You can also use this same function to compress the archives.
 
-archiveFiles ()
+compressFiles ()
 {
-	printf "Archiving files"
+	printf "Archiving and compressing files."
+	printf "This will take a while . . "
+
+	LIST_DIR=$( ls -l ${DIRNAME} | grep -e total -v | gawk '{ print $9 }' )
+	A_LIST=(${LIST_DIR})
+
+	for compress in ${A_LIST[@]}
+	do
+		${CMDTAR} -cf $FULL_BACKUP.tar $compress > /dev/null 2>&1
+		
+		${CMDZSTD} -z $FULL_BACKUP.tar > /dev/null 2>&1
+	done
+
+	printf "Finished compressing archives."
 }
 
 
@@ -170,86 +183,80 @@ asciiArt
 
 while true
 do
-	printf "Choose a Backup Method: "
-	printf "1 - Full Backup"
-	printf "2 - Incremental Backup"
-	printf "3 - Restore From Backup"
-	printf "Q - Exit the Script"
+	PS3="Choose a Backup Method: "
+	CHOICES=("Full" "Incremental" "Restore" "Quit")
+	
+	select OPT in "${CHOICES[@]}"
+	do
+		case $OPT in 
+			"Full" )
+				## Secondary Menu.
+				PS3="Select the location to transfer your archives: "
+				SELECTION=("SSH" "LOCAL" "QUIT")
 
-	read -p "-> " BACKUP
+				select CHOICE in "${SELECTION[@]}"
+				do
+					case $CHOICE in
+						"SSH" )
+							printf "Enter the destination directory for the ssh server: "
 
-	case $BACKUP in
-		"1"	)
-			##TODO: Choose the location where the files are to backup.
-			##	Use an array with all the files and directories to archive.
-			##	Choose destination directory to transfer archived files: 
-			##		- Transfer to remote location: SSH
-			##		- Transfer to local drive
-			##	All files will be archived and compressed.
-			##	All the archives will have a unique name with day of the week,
-			##	and the time and date.
-			##	All the compressed files will be transfered to the location
-			##	chosen by the user.
-			printf "You chose to do a Full Backup.\n\n"
-			printf "Choose the directory for the files to backup: "
+							read -p "-> " SSHSTORAGE
 
-			read -p "-> " DIRNAME
+							printf "Enter the IP address of the ssh server: "
 
-			printf "You can leave this one empty if don't want to ignore any files or directories"
-			printf "Choose which file or directory you don't want to backup: "
-			
-			read -p "-> " IGNOREFILE
-			
-			printf "Choose the location to transfer the archived files: "
-			printf "1 - SSH\n"
-			printf "2 - Local"
+							read -p "-> " SSHIPADDR
 
-			read -p "-> " STORAGE
-			
-			case $STORAGE in
-				"1" )
-					echo "You have chosen to transfer your files to an SSH server."
-					;;
-				"2" )
-					echo "You have chosen to transfer your files to a local drive."
-					;;
-				* )
-					echo "Unknown location"
-					;;
-			esac
-			;;
-		"2"	)
-			##TODO: Choose the file or directory you recently modified to archive.
-			##	If the file has not been recently modified it will not be archived.
-			##	Archive and compress the files.
-			##	Choose a destination directory to transfer archived files:
-			##		- Transfer to remote location: SSH
-			##		- Transfer to local drive
-			##	All the archives will have a unique name with day of the week,
-			##	and the time and date.
-			printf "You chose 2: Incremental Backup"
-			;;
-		"3"	)
-			##TODO: Choose the archived file(s) from local drive or remote location
-			##	(SSH) to transfer to your local host.
-			##	Uncompress and unarchive files in current directory.
-			##	Re-run this script to backup files.
-			printf "You chose 3: Restore fom Backup"
-			;;
-		"q" | "Q"	)
-			printf "Exiting Script"
-			break
-			;;
-		*	)
-			printf "Unknown Backup Method"
-			;;
-	esac
+							printf "Enter the username of the ssh server: "
+
+							read -p "-> " SSHUSRNAME
+
+							printf "Choose the files to backup: "
+
+							read -p "-> " DIRNAME
+
+							## TODO: Use functions to archive and compress the files.
+							##	 Then find a way to transfer those files individually
+							##	 to the SSH server.
+							;;
+						"LOCAL" )
+							printf "Enter the destination local directory: "
+
+							read -p "-> " LOCALDIR
+
+							##TODO: Continue adding variables: filename, archive name,
+							##	compression function, etc.
+							;;
+						"QUIT" )
+							printf "Exiting the script."
+							break
+							;;
+						* )
+							printf "Unknown choice"
+							;;
+					esac
+				done
+				;;
+			"Incremental" )
+				echo "You chose to do an Incremental backup."
+				;;
+			"Restore" )
+				echo "You chose to restore from backup."
+				;;
+			"Quit" )
+				echo "Exiting the script."
+				;;
+			* )
+				echo "Unknown choice entered."
+				;;
+		esac
+	done
 done
 
 
 ###
 ## Creating the backup archive.
-#
+##NOTE: The first part of this command might not be convenient for this script. I have tried different forms
+##	of the command but it keeps displaying the $IGNOREFILE variable even with the '-path' and '-prune' flags set.
 
 echo -e "\nPreparing backup. This will take some time ..."
 ${CMDFIND} ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | ${CMDXARGS} -0 ${CMDTAR} -rf ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
