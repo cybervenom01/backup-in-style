@@ -39,8 +39,8 @@ LOGDIR="/var/log/bkstyle.d"
 
 USR=$( whoami )
 HOST=$( uname -n )
-TIMESTAMP=$( date +%Y%m%d-%H%M%S )
-FULL_BACKUP=${USR}-${HOST}-FULL-BACKUP-${TIMESTAMP}
+#TIMESTAMP=$( date +%Y%m%d-%H%M%S )
+#FULL_BACKUP=${USR}-${HOST}-FULL-BACKUP-${TIMESTAMP}
 
 
 ###
@@ -134,22 +134,27 @@ asciiArt ()
 
 ###
 ## Function to Archive files
-##TODO: Choose files to archive.
-##NOTE: You can also use this same function to compress the archives.
+##TODO: Save the archives into a temporary directory.
 
 compressFiles ()
 {
 	printf "Archiving and compressing files."
 	printf "This will take a while . . "
 
-	LIST_DIR=$( ls -l ${DIRNAME} | grep -e total -v | gawk '{ print $9 }' )
-	A_LIST=(${LIST_DIR})
+	LIST_DIR=( "$DIRNAME"/* )
+	COUNTER=1
 
-	for compress in ${A_LIST[@]}
+	for files in ${A_LIST[@]}
 	do
-		${CMDTAR} -cf $FULL_BACKUP.tar $compress > /dev/null 2>&1
+		TIMESTAMP=$( date +%Y%m%d-%H%M%S )
+		BASE_NAME=$( basename "$files" )
+		FULL_BACKUP=${BASE_NAME}-${USR}-${HOST}-FB-${TIMESTAMP}-$( printf "%03d" $COUNTER )
+
+		${CMDTAR} -cf $FULL_BACKUP.tar $files > /dev/null 2>&1
 		
 		${CMDZSTD} -z $FULL_BACKUP.tar > /dev/null 2>&1
+
+		(( COUNTER++ ))
 	done
 
 	printf "Finished compressing archives."
@@ -157,18 +162,10 @@ compressFiles ()
 
 
 ###
-## Compressing Files
-#
-
-compressArchives ()
-{
-	printf "Compressing Archives"
-}
-
-
-###
 ## Call Function to display ascii art.
 #
+
+clear
 
 asciiArt
 
