@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/sh
+##TODO: Create Error Handling: Use set.
 
 ###
 ## Main Configuration File.
@@ -58,3 +59,14 @@ echo -e "All commands are account for."
 cp ../backup-in-style.sh /usr/local/bin
 
 chmod 755 /usr/local/bin/backup-in-style.sh
+
+
+###
+## Copy the ASCII Art into the /usr/share/BKStyle directory
+#
+
+BKDIR="BKStyle"
+
+mkdir /usr/share/$BKDIR
+
+cp -R ../ascii /usr/share/$BKDIR

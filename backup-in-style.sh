@@ -52,8 +52,10 @@ INCREMENTAL_BACKUP=${USER}-${HOST}-INCREMENTAL-${WEEKDAY_NAME}-${TIMESTAMP}
 
 
 ###
-## Variable names for Local or Remote locations to transfer archives.
-###
+## Create Temporary Directory to Save the Compressed Files.
+#
+
+TMPDIR="TempBK"
 
 ###
 ## Error Handling
@@ -138,21 +140,23 @@ asciiArt ()
 
 compressFiles ()
 {
-	printf "Archiving and compressing files."
+	printf "Your files are being archived and compressed."
 	printf "This will take a while . . "
 
 	LIST_DIR=( "$DIRNAME"/* )
 	COUNTER=1
 
-	for files in ${A_LIST[@]}
+	for files in ${LIST_DIR[@]}
 	do
 		TIMESTAMP=$( date +%Y%m%d-%H%M%S )
 		BASE_NAME=$( basename "$files" )
 		FULL_BACKUP=${BASE_NAME}-${USR}-${HOST}-FB-${TIMESTAMP}-$( printf "%03d" $COUNTER )
 
-		${CMDTAR} -cf $FULL_BACKUP.tar $files > /dev/null 2>&1
+		mkdir /tmp/$TMPDIR
+
+		${CMDTAR} -cf /tmp/$TMPDIR/$FULL_BACKUP.tar $files > /dev/null 2>&1
 		
-		${CMDZSTD} -z $FULL_BACKUP.tar > /dev/null 2>&1
+		${CMDZSTD} -z /tmp/$TMPDIR/$FULL_BACKUP.tar > /dev/null 2>&1
 
 		(( COUNTER++ ))
 	done
@@ -211,14 +215,27 @@ do
 
 							read -p "-> " DIRNAME
 
-							## TODO: Use functions to archive and compress the files.
-							##	 Then find a way to transfer those files individually
-							##	 to the SSH server.
+							compressFiles
+
+							## Temporary directory with all the compressed files.
+							LIST_TMP=( "/tmp/$TMPDIR"/*.tar.zst )
+
+							##NOTE: You can modify the SSH command according to your server configuration.
+							for zst2BK in "${LIST_TMP[@]}"
+							do
+								${CMDSCP} $zst2BK scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
+							done
+
+							rm /tmp/$TMPDIR/*
+
+							rmdir /tmp/$TMPDIR
+
+							successMessage
 							;;
 						"LOCAL" )
 							printf "Enter the destination local directory: "
 
-							read -p "-> " LOCALDIR
+							#read -p "-> " LOCALDIR
 
 							##TODO: Continue adding variables: filename, archive name,
 							##	compression function, etc.
@@ -250,74 +267,24 @@ do
 done
 
 
-###
-## Creating the backup archive.
-##NOTE: The first part of this command might not be convenient for this script. I have tried different forms
-##	of the command but it keeps displaying the $IGNOREFILE variable even with the '-path' and '-prune' flags set.
+#echo -e "Choose where to send files.\n"
+#echo -e "\t1 - Local Drive\n"
+#echo -e "\t2 - Remote SSH Server\n"
+#echo -e "\tQ - Exit Program\n\n"
 
-echo -e "\nPreparing backup. This will take some time ..."
-${CMDFIND} ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | ${CMDXARGS} -0 ${CMDTAR} -rf ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
+#read -p "-> " CHOICE
 
-
-###
-## Display an error message if there was a problem archiving the files.
-#
-
-#if [ $? -ne "0" ];
-#then
-#	err_Invocation
-#fi
-
-
-###
-## Compressing the Archives
-###
-
-###
-## Using zstd to compress the archives.
-#
-
-echo -e "\nCompressing with \"zstd\".\n"
-${CMDZSTD} -z ${ARCHIVE_BACKUP}.tar > /dev/null 2>&1
-
-
-###
-## Display an error message if there was a problem compressing the archives.
-#
-
-##if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
-#if [ $? -ne "0" ]
-#then
-#	err_File
-#fi
-
-
-###
-## Selection Menu To Send files
-###
-
-###
-## Select Storage Location.
-#
-
-echo -e "Choose where to send files.\n"
-echo -e "\t1 - Local Drive\n"
-echo -e "\t2 - Remote SSH Server\n"
-echo -e "\tQ - Exit Program\n\n"
-
-read -p "-> " CHOICE
-
-case $CHOICE in
-	1)
-		read -p "Enter the location for the local drive. " STORAGE
+#case $CHOICE in
+#	1)
+#		read -p "Enter the location for the local drive. " STORAGE
 		
 		#if [ ! -d "${STORAGE}" ]
 		#then
 		#	err_File
 		#fi
 
-		echo -e "\n\tTransfering...\n"
-		${CMDCP} ${FULL_BACKUP}.tar.zst ${STORAGE} > /dev/null 2>&1
+#		echo -e "\n\tTransfering...\n"
+#		${CMDCP} ${FULL_BACKUP}.tar.zst ${STORAGE} > /dev/null 2>&1
 
 		#if [ ${FULL_BACKUP##*.} != "zst" ]
 		#if [ $? -ne "0" ]
@@ -325,23 +292,23 @@ case $CHOICE in
 		#	err_File
 		#fi
 
-		echo -e "\nYour data has been successfuly transfered.\n\n"
-		;;
-	2)
-		read -p "Enter the IP address of the SSH server: " SSHIPADDR
+#		echo -e "\nYour data has been successfuly transfered.\n\n"
+#		;;
+#	2)
+#		read -p "Enter the IP address of the SSH server: " SSHIPADDR
 		
-		if ! validIP "$SSHIPADDR"
-		then
-			echo -e "\033[0;31m$SSHIPADDR\033[0;0m: Invalid IP address: Make sure you entered the correct IP address."
-			exit 61
-		fi
+#		if ! validIP "$SSHIPADDR"
+#		then
+#			echo -e "\033[0;31m$SSHIPADDR\033[0;0m: Invalid IP address: Make sure you entered the correct IP address."
+#			exit 61
+#		fi
 
-		read -p "Enter the username of the remote SSH server: " SSHUSRNM
+#		read -p "Enter the username of the remote SSH server: " SSHUSRNM
 
-		read -p "Enter the location of the remote directory: " SSHSTORAGE
+#		read -p "Enter the location of the remote directory: " SSHSTORAGE
 		
-		echo -e "\n\tYour data is ready to be transfered.\n"
-		${CMDSCP} ${FULL_BACKUP}.tar.zst scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
+#		echo -e "\n\tYour data is ready to be transfered.\n"
+#		${CMDSCP} ${FULL_BACKUP}.tar.zst scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
 		
 		#if [ $? -ne "0" ];
 		#then
@@ -351,18 +318,18 @@ case $CHOICE in
 		#	exit 255
 		#fi
 		
-		echo -e "\n\tSecure transfer of your data has finished.\n\n"
-		;;
-	'Q')
-		;&
-	'q')
-		echo -e "\n\tExit Program\n\n"
-		exit 0;
-		;;
-	*)
-		echo -e "\n\tUnknown character entered. Exiting.\n\n"
-		exit 1;
-		;;
-esac
+#		echo -e "\n\tSecure transfer of your data has finished.\n\n"
+#		;;
+#	'Q')
+#		;&
+#	'q')
+#		echo -e "\n\tExit Program\n\n"
+#		exit 0;
+#		;;
+#	*)
+#		echo -e "\n\tUnknown character entered. Exiting.\n\n"
+#		exit 1;
+#		;;
+#esac
 
 exit 0
