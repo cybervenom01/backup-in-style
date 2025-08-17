@@ -1,5 +1,6 @@
 #!/bin/sh
 ##TODO: Create Error Handling: Use set.
+set -Eeuo pipefail
 
 ###
 ## Main Configuration File.
@@ -33,13 +34,13 @@ echo -e "\nChecking for comands: \n"
 
 LST_CMDS=( "tar" "zstd" "ssh" "scp" )
 
-for cmds in "${LST_CMDS[@]}";
+for CMDS in "${LST_CMDS[@]}";
 do
-	echo -e "$cmds . . ."
+	echo -e "$CMDS . . ."
 
-        if ! command -v "$cmds" > /dev/null 2>&1;
+        if ! command -v "$CMDS" > /dev/null 2>&1;
         then
-                echo "$cmds not found"
+                echo "$CMDS not found"
                 echo "Please install the corresponding packages."
                 exit 0
         fi
@@ -56,17 +57,19 @@ echo -e "All commands are account for."
 ## and its executable.
 #
 
-cp ../backup-in-style.sh /usr/local/bin
+cp ../backup-in-style.sh /usr/local/bin/bakupstyle
 
-chmod 755 /usr/local/bin/backup-in-style.sh
+chmod 755 /usr/local/bin/bakupstyle
 
 
 ###
 ## Copy the ASCII Art into the /usr/share/BKStyle directory
 #
 
-BKDIR="BKStyle"
+ASCIILOC="/usr/share"
+BKDIR="BakupStyle.d"
+ASCIIDIR="AsciiArt"
 
-mkdir /usr/share/$BKDIR
+mkdir -p ${ASCIILOC}/$BKDIR/$ASCIIDIR
 
-cp -R ../ascii /usr/share/$BKDIR
+cp -R ../ascii ${ASCIILOC}/$BKDIR/$ASCIIART

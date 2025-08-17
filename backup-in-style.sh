@@ -34,13 +34,11 @@ LOGDIR="/var/log/bkstyle.d"
 ###
 
 ###
-## Variable names for Full Backup
+## Display the username and the host of the machine.
 #
 
 USR=$( whoami )
 HOST=$( uname -n )
-#TIMESTAMP=$( date +%Y%m%d-%H%M%S )
-#FULL_BACKUP=${USR}-${HOST}-FULL-BACKUP-${TIMESTAMP}
 
 
 ###
@@ -126,11 +124,13 @@ function validIP()
 ##	 Use a 'for' loop.
 ##	 Use globbing.
 
-ASCIIDIR="../ascii"
+ASCIILOC="/usr/share/"
+BKDIR="BakupStyle.d"
+ASCIIDIR="AsciiArt"
 
 asciiArt ()
 {
-	find ${ASCIIDIR} -maxdepth 1 -type f -print | sort -R | tail -n 1 | while read file ; do cat $file; done
+	find ${ASCIILOC}/$BKDIR/$ASCIIDIR -maxdepth 1 -type f -print | sort -R | tail -n 1 | while read file ; do cat $file; done
 }
 
 
@@ -184,6 +184,7 @@ asciiArt
 
 while true
 do
+	## Primary Menu.
 	PS3="Choose a Backup Method: "
 	CHOICES=("Full" "Incremental" "Restore" "Quit")
 	
@@ -235,10 +236,27 @@ do
 						"LOCAL" )
 							printf "Enter the destination local directory: "
 
-							#read -p "-> " LOCALDIR
+							read -p "-> " LOCALDIR
 
-							##TODO: Continue adding variables: filename, archive name,
-							##	compression function, etc.
+							printf "Choose the files to backup: "
+
+							read -p "-> " DIRNAME
+
+							compressFiles
+
+							## Temporary directory with all the compressed files.
+							LIST_TMP=( "/tmp/$TMPDIR"/*.tar.zst )
+
+							for zst2BK in "${LIST_TMP[@]}"
+							do
+								${CMDCP} $zst2BK ${LOCALDIR} > /dev/null 2>&1
+							done
+
+							rm /tmp/$TMPDIR/*
+
+							rmdir /tmp/$TMPDIR
+
+							successMessage
 							;;
 						"QUIT" )
 							printf "Exiting the script."
