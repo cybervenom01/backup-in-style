@@ -1,6 +1,16 @@
-#!/bin/sh
-##TODO: Create Error Handling: Use set.
-set -Eeuo pipefail
+#!/bin/bash
+
+###
+## Error Handler
+#
+
+trap 'err_handle $? $LINENO' ERR
+
+err_handle ()
+{
+	printf "$( uname -n ): Error: $1: On line $2"
+}
+
 
 ###
 ## Main Configuration File.
@@ -20,8 +30,8 @@ E_UID=1
 
 if [ "$UID" -ne "$ROOT_UID" ]
 then
-	echo -e "\n\n"
-	echo -e "Please run this script with \033[0;31mroot\033[0;0m privileges.\n\n"
+	printf "\n\n"
+	printf "Please run this script with root privileges.\n\n"
 	exit $E_UID
 fi
 
@@ -30,26 +40,24 @@ fi
 ## Searches for the commands which help to compress, archive, and remotely transfer your data.
 #
 
-echo -e "\nChecking for comands: \n"
+printf "\nChecking if commands are installed: \n"
 
-LST_CMDS=( "tar" "zstd" "ssh" "scp" )
+A_CMDS=( "tar" "zstd" "ssh" "scp" )
 
-for CMDS in "${LST_CMDS[@]}";
+for CMDS in "${A_CMDS[@]}";
 do
-	echo -e "$CMDS . . ."
+	printf "$CMDS . . .\n"
 
         if ! command -v "$CMDS" > /dev/null 2>&1;
         then
-                echo "$CMDS not found"
-                echo "Please install the corresponding packages."
+                printf "$CMDS not found\n"
+                printf "Please install the corresponding packages.\n\n"
                 exit 0
         fi
 done
 
-echo -e "All commands are account for."
+printf "Commands are installed.\n"
 
-
-##NOTE: You can copy the main script to '/usr/local/bin' directory.
 
 ###
 ## Copy main script into /usr/local/bin
@@ -57,9 +65,11 @@ echo -e "All commands are account for."
 ## and its executable.
 #
 
-cp ../backup-in-style.sh /usr/local/bin/bakupstyle
+printf "Copying the script to /usr/local/bin.\n"
+cp ../backup-in-style.sh /usr/local/bin/backupstyle
 
-chmod 755 /usr/local/bin/bakupstyle
+printf "Renaming and changing permissions for script.\n"
+chmod 755 /usr/local/bin/backupstyle
 
 
 ###
@@ -67,9 +77,21 @@ chmod 755 /usr/local/bin/bakupstyle
 #
 
 ASCIILOC="/usr/share"
-BKDIR="BakupStyle.d"
-ASCIIDIR="AsciiArt"
+BKDIR="backupstyle.d"
+ASCIIDIR="asciiart"
 
+printf "Creating BakupStyle.d directory.\n"
 mkdir -p ${ASCIILOC}/$BKDIR/$ASCIIDIR
 
-cp -R ../ascii ${ASCIILOC}/$BKDIR/$ASCIIART
+printf "Copying ascii art files to the directory.\n"
+cp ../ascii/* ${ASCIILOC}/$BKDIR/$ASCIIDIR
+
+printf "Changing permissions to the files and directory.\n"
+chmod 755 /usr/share/$BKDIR
+chmod 755 /usr/share/$BKDIR/$ASCIIDIR
+chmod 644 /usr/share/$BKDIR/$ASCIIDIR/*
+
+printf "\nYour backup script is ready.\n"
+printf "Keep your data safe and secure.\n\n"
+
+exit 0
