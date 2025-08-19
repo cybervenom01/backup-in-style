@@ -8,7 +8,12 @@ trap 'err_handle $? $LINENO' ERR
 
 err_handle ()
 {
-	printf "$( uname -n ): Error: $1: On line $2"
+	E_STAT=$1
+        LINE_NO=$2
+        E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
+
+        printf "%b" "$E_MSG"
+        exit $E_STAT
 }
 
 
@@ -73,23 +78,65 @@ chmod 755 /usr/local/bin/backupstyle
 
 
 ###
-## Copy the ASCII Art into the /usr/share/BKStyle directory
+## Copy the ASCII Art into the /usr/share/backupstyle directory
 #
 
 ASCIILOC="/usr/share"
-BKDIR="backupstyle.d"
+BKDIR="backupstyle"
 ASCIIDIR="asciiart"
 
-printf "Creating BakupStyle.d directory.\n"
-mkdir -p ${ASCIILOC}/$BKDIR/$ASCIIDIR
+if [ ! -d ${ASCIILOC}/$BKDIR/$ASCIIDIR ]
+then
+	printf "Creating bakupstyle directory.\n"
+	mkdir -p ${ASCIILOC}/$BKDIR/$ASCIIDIR
 
-printf "Copying ascii art files to the directory.\n"
-cp ../ascii/* ${ASCIILOC}/$BKDIR/$ASCIIDIR
+	printf "Changing directory permissions."
+	chmod 755 ${ASCIILOC}/$BKDIR
+	chmod 755 ${ASCIILOC}/$BKDIR/$ASCIIDIR
 
-printf "Changing permissions to the files and directory.\n"
-chmod 755 /usr/share/$BKDIR
-chmod 755 /usr/share/$BKDIR/$ASCIIDIR
-chmod 644 /usr/share/$BKDIR/$ASCIIDIR/*
+	printf "Copying ascii art files to the directory.\n"
+	cp ../ascii/* ${ASCIILOC}/$BKDIR/$ASCIIDIR
+
+	printf "Changing permissions to the files and directory.\n"
+	chmod 644 /usr/share/$BKDIR/$ASCIIDIR/*
+else
+	printf "iDirectories exists."
+fi
+
+
+###
+## Create directory named backupstyle.d in /var/log
+#
+
+BKLOGDIR="backupstyle.d"
+BKLOGFILE="backupstyle.log"
+
+if [ ! -d $BKLOGDIR ]
+then
+	printf "Creating $BKLOGDIR directory: \n"
+	mkdir /var/log/$BKLOGDIR
+
+	printf "Changing directory permissions for $BKLOGDIR.\n"
+	chmod 755 /var/log/$BKLOGDIR
+else
+	printf "Directory $BKLOGDIR exist."
+fi
+
+if [ ! -a /var/log/$BKLOGDIR/$BKLOGFILE ]
+then
+	printf "Creating $BKLOGFILE log file.\n"
+	touch /var/log/$BKLOGDIR/$BKLOGFILE
+
+	printf "Changing file permissions for $BKLOGFILE.\n"
+	chmod 644 /var/log/$BKLOGDIR/$BKLOGFILE
+else
+	printf "Log file $BKLOGFILE exist."
+fi
+
+
+###
+## Display message.
+#
 
 printf "\nYour backup script is ready.\n"
 printf "Keep your data safe and secure.\n\n"

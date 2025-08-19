@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ###
 ## Configuring the values into the variables.
@@ -25,8 +25,8 @@ CMDSSH=/usr/bin/ssh
 ## Location to log file
 #
 
-LOGFILE="bkstyle.log"
-LOGDIR="/var/log/bkstyle.d"
+LOGFILE="backupstyle.log"
+LOGDIR="/var/log/backupstyle.d"
 
 
 ###
@@ -67,8 +67,6 @@ trap 'exit_error $? $LINENO' ERR
 
 exit_error ()
 {
-	##NOTE: You might need to create these as global variables in case this function
-	##	gives you an error.
 	E_STAT=$1
 	LINE_NO=$2
 	E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
@@ -124,9 +122,9 @@ function validIP()
 ##	 Use a 'for' loop.
 ##	 Use globbing.
 
-ASCIILOC="/usr/share/"
-BKDIR="BakupStyle.d"
-ASCIIDIR="AsciiArt"
+ASCIILOC="/usr/share"
+BKDIR="backupstyle"
+ASCIIDIR="asciiart"
 
 asciiArt ()
 {
@@ -137,6 +135,13 @@ asciiArt ()
 ###
 ## Function to Archive files
 ##TODO: Save the archives into a temporary directory.
+
+if [ ! -d /tmp/$TMPDIR ]
+then
+	mkdir /tmp/$TMPDIR
+else
+	printf "$TMPDIR directory exists."
+fi
 
 compressFiles ()
 {
@@ -151,8 +156,6 @@ compressFiles ()
 		TIMESTAMP=$( date +%Y%m%d-%H%M%S )
 		BASE_NAME=$( basename "$files" )
 		FULL_BACKUP=${BASE_NAME}-${USR}-${HOST}-FB-${TIMESTAMP}-$( printf "%03d" $COUNTER )
-
-		mkdir /tmp/$TMPDIR
 
 		${CMDTAR} -cf /tmp/$TMPDIR/$FULL_BACKUP.tar $files > /dev/null 2>&1
 		
