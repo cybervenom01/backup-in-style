@@ -81,56 +81,58 @@ chmod 755 /usr/local/bin/backupstyle
 ## Copy the ASCII Art into the /usr/share/backupstyle directory
 #
 
-ASCIILOC="/usr/share"
 BKDIR="backupstyle"
 ASCIIDIR="asciiart"
 
-if [ ! -d ${ASCIILOC}/$BKDIR/$ASCIIDIR ]
+if [ ! -d /usr/share/$BKDIR/$ASCIIDIR ]
 then
 	printf "Creating bakupstyle directory.\n"
-	mkdir -p ${ASCIILOC}/$BKDIR/$ASCIIDIR
+	mkdir -p /usr/share/$BKDIR/$ASCIIDIR
 
-	printf "Changing directory permissions."
-	chmod 755 ${ASCIILOC}/$BKDIR
-	chmod 755 ${ASCIILOC}/$BKDIR/$ASCIIDIR
+	printf "Changing directory permissions.\n"
+	chmod 755 /usr/share/$BKDIR
+	chmod 755 /usr/share/$BKDIR/$ASCIIDIR
 
 	printf "Copying ascii art files to the directory.\n"
-	cp ../ascii/* ${ASCIILOC}/$BKDIR/$ASCIIDIR
+	cp ../ascii/* /usr/share/$BKDIR/$ASCIIDIR
 
-	printf "Changing permissions to the files and directory.\n"
+	printf "Changing permissions to the ascii art files.\n"
 	chmod 644 /usr/share/$BKDIR/$ASCIIDIR/*
 else
-	printf "iDirectories exists."
+	printf "Directories exists.\n\n"
 fi
 
 
 ###
 ## Create directory named backupstyle.d in /var/log
-#
+##TODO: Instead of the variable $HOME use something else that can help
+##	create the directory in a regular user's home directory. Since
+##	this script is being run as root it will create the directory
+##	in the root user's home directory.
 
-BKLOGDIR="backupstyle.d"
-BKLOGFILE="backupstyle.log"
+BKLOGDIR=".backupstyle.d"
+BKLOGFILE="backup.log"
 
-if [ ! -d $BKLOGDIR ]
+if [ ! -d ${HOME}/${BKLOGDIR} ]
 then
-	printf "Creating $BKLOGDIR directory: \n"
-	mkdir /var/log/$BKLOGDIR
+	printf "Creating ${BKLOGDIR} directory: \n"
+	mkdir ${HOME}/${BKLOGDIR}
 
-	printf "Changing directory permissions for $BKLOGDIR.\n"
-	chmod 755 /var/log/$BKLOGDIR
+	printf "Changing directory permissions for ${BKLOGDIR}.\n"
+	chmod 755 ${HOME}/${BKLOGDIR}
 else
-	printf "Directory $BKLOGDIR exist."
+	printf "Directory ${BKLOGDIR} exist.\n\n"
 fi
 
-if [ ! -a /var/log/$BKLOGDIR/$BKLOGFILE ]
+if [ ! -a ${HOME}/${BKLOGDIR}/$BKLOGFILE ]
 then
 	printf "Creating $BKLOGFILE log file.\n"
-	touch /var/log/$BKLOGDIR/$BKLOGFILE
+	touch ${HOME}/${BKLOGDIR}/$BKLOGFILE
 
 	printf "Changing file permissions for $BKLOGFILE.\n"
-	chmod 644 /var/log/$BKLOGDIR/$BKLOGFILE
+	chmod 644 ${HOME}/${BKLOGDIR}/$BKLOGFILE
 else
-	printf "Log file $BKLOGFILE exist."
+	printf "Log file $BKLOGFILE exist.\n\n"
 fi
 
 

@@ -25,8 +25,8 @@ CMDSSH=/usr/bin/ssh
 ## Location to log file
 #
 
-LOGFILE="backupstyle.log"
-LOGDIR="/var/log/backupstyle.d"
+LOGFILE="backup.log"
+LOGDIR=".backupstyle.d"
 
 
 ###
@@ -71,7 +71,7 @@ exit_error ()
 	LINE_NO=$2
 	E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
 
-	printf "%b" "$E_MSG" | tee >> "${LOGDIR}/${LOGFILE}"
+	printf "%b" "$E_MSG" | tee >> "${HOME}/$LOGDIR/$LOGFILE"
 	exit $E_STAT
 }
 
@@ -85,7 +85,7 @@ successMessage ()
 {
 	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data compression and transfer successful.\n"
 
-	printf "%b" "$S_MSG" | tee >> "${LOGDIR}/${LOGFILE}"
+	printf "%b" "$S_MSG" | tee >> "${HOME}/$LOGDIR/$LOGFILE"
 }
 
 
@@ -140,13 +140,13 @@ if [ ! -d /tmp/$TMPDIR ]
 then
 	mkdir /tmp/$TMPDIR
 else
-	printf "$TMPDIR directory exists."
+	printf "$TMPDIR directory exists.\n\n"
 fi
 
 compressFiles ()
 {
-	printf "Your files are being archived and compressed."
-	printf "This will take a while . . "
+	printf "Your files are being archived and compressed.\n"
+	printf "This will take a while . . .\n\n"
 
 	LIST_DIR=( "$DIRNAME"/* )
 	COUNTER=1
@@ -164,7 +164,7 @@ compressFiles ()
 		(( COUNTER++ ))
 	done
 
-	printf "Finished compressing archives."
+	printf "Finished compressing archives.\n\n"
 }
 
 
@@ -188,7 +188,7 @@ asciiArt
 while true
 do
 	## Primary Menu.
-	PS3="Choose a Backup Method: "
+	PS3='Choose a Backup Method: '
 	CHOICES=("Full" "Incremental" "Restore" "Quit")
 	
 	select OPT in "${CHOICES[@]}"
@@ -196,8 +196,8 @@ do
 		case $OPT in 
 			"Full" )
 				## Secondary Menu.
-				PS3="Select the location to transfer your archives: "
-				SELECTION=("SSH" "LOCAL" "QUIT")
+				PS3='Select the location to transfer your archives: '
+				SELECTION=("SSH" "Local" "Quit")
 
 				select CHOICE in "${SELECTION[@]}"
 				do
@@ -236,7 +236,7 @@ do
 
 							successMessage
 							;;
-						"LOCAL" )
+						"Local" )
 							printf "Enter the destination local directory: "
 
 							read -p "-> " LOCALDIR
@@ -261,7 +261,7 @@ do
 
 							successMessage
 							;;
-						"QUIT" )
+						"Quit" )
 							printf "Exiting the script."
 							break
 							;;
