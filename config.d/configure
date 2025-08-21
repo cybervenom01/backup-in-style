@@ -104,39 +104,6 @@ fi
 
 
 ###
-## Create directory named backupstyle.d in /var/log
-##TODO: Instead of the variable $HOME use something else that can help
-##	create the directory in a regular user's home directory. Since
-##	this script is being run as root it will create the directory
-##	in the root user's home directory.
-
-BKLOGDIR=".backupstyle.d"
-BKLOGFILE="backup.log"
-
-if [ ! -d ${HOME}/${BKLOGDIR} ]
-then
-	printf "Creating ${BKLOGDIR} directory: \n"
-	mkdir ${HOME}/${BKLOGDIR}
-
-	printf "Changing directory permissions for ${BKLOGDIR}.\n"
-	chmod 755 ${HOME}/${BKLOGDIR}
-else
-	printf "Directory ${BKLOGDIR} exist.\n\n"
-fi
-
-if [ ! -a ${HOME}/${BKLOGDIR}/$BKLOGFILE ]
-then
-	printf "Creating $BKLOGFILE log file.\n"
-	touch ${HOME}/${BKLOGDIR}/$BKLOGFILE
-
-	printf "Changing file permissions for $BKLOGFILE.\n"
-	chmod 644 ${HOME}/${BKLOGDIR}/$BKLOGFILE
-else
-	printf "Log file $BKLOGFILE exist.\n\n"
-fi
-
-
-###
 ## Display message.
 #
 

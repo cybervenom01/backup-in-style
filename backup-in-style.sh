@@ -28,6 +28,22 @@ CMDSSH=/usr/bin/ssh
 LOGFILE="backup.log"
 LOGDIR=".backupstyle.d"
 
+if [ ! -d "$LOGDIR" ]
+then
+	mkdir ${HOME}/$LOGDIR
+	chmod 755 ${HOME}/$LOGDIR
+else
+	printf "${HOME}/$LOGDIR already exists."
+fi
+
+if [ ! -a ${HOME}/$LOGDIR/$LOGFILE ]
+then
+	touch ${HOME}/$LOGDIR/$LOGFILE
+	chmod 644 ${HOME}/$LOGDIR/$LOGFILE
+else
+	printf "${HOME}/$LOGDIR/$LOGFILE already exists."
+fi
+
 
 ###
 ## Assigning Names for the Backup Files
@@ -140,7 +156,7 @@ if [ ! -d /tmp/$TMPDIR ]
 then
 	mkdir /tmp/$TMPDIR
 else
-	printf "$TMPDIR directory exists.\n\n"
+	printf "/tmp/$TMPDIR directory exists.\n\n"
 fi
 
 compressFiles ()
@@ -156,15 +172,14 @@ compressFiles ()
 		TIMESTAMP=$( date +%Y%m%d-%H%M%S )
 		BASE_NAME=$( basename "$files" )
 		FULL_BACKUP=${BASE_NAME}-${USR}-${HOST}-FB-${TIMESTAMP}-$( printf "%03d" $COUNTER )
-
+		
+		printf "$files is being compressed.\n"
 		${CMDTAR} -cf /tmp/$TMPDIR/$FULL_BACKUP.tar $files > /dev/null 2>&1
 		
 		${CMDZSTD} -z /tmp/$TMPDIR/$FULL_BACKUP.tar > /dev/null 2>&1
 
 		(( COUNTER++ ))
 	done
-
-	printf "Finished compressing archives.\n\n"
 }
 
 
@@ -197,20 +212,22 @@ do
 			"Full" )
 				## Secondary Menu.
 				PS3='Select the location to transfer your archives: '
-				SELECTION=("SSH" "Local" "Quit")
+				SELECTION=("SSH" "Local" "Back To Main Menu" "Quit")
 
 				select CHOICE in "${SELECTION[@]}"
 				do
 					case $CHOICE in
 						"SSH" )
+							##NOTE: For some reason the errors are not being detected in
+							##	this section of the code
 							printf "Enter the destination directory for the ssh server: "
 
 							read -p "-> " SSHSTORAGE
 
 							printf "Enter the IP address of the ssh server: "
-
+							##TODO: Detect error in how the IP address is written.
 							read -p "-> " SSHIPADDR
-
+							
 							printf "Enter the username of the ssh server: "
 
 							read -p "-> " SSHUSRNAME
@@ -220,14 +237,20 @@ do
 							read -p "-> " DIRNAME
 
 							compressFiles
+							##NOTE: For some reason the script doesn't go any further than here.
+							printf "Finished compressing files.\n"
 
 							## Temporary directory with all the compressed files.
-							LIST_TMP=( "/tmp/$TMPDIR"/*.tar.zst )
+							LIST_TMP=( /tmp/"$TMPDIR"/*.tar.zst )
 
 							##NOTE: You can modify the SSH command according to your server configuration.
+							printf "Starting transfer of compressed files to the SSH server\n"
+
 							for zst2BK in "${LIST_TMP[@]}"
 							do
-								${CMDSCP} $zst2BK scp://$SSHUSRNM@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
+								printf "$zst2BK is being transfered.\n"
+								${CMDSCP} $zst2BK scp://$SSHUSRNAME@$SSHIPADDR/${SSHSTORAGE} > /dev/null 2>&1
+								#sleep 1
 							done
 
 							rm /tmp/$TMPDIR/*
@@ -261,9 +284,12 @@ do
 
 							successMessage
 							;;
+						"Back To Main Menu" )
+							break 1
+							;;
 						"Quit" )
 							printf "Exiting the script."
-							break
+							break 2
 							;;
 						* )
 							printf "Unknown choice"
