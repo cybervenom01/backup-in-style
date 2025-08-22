@@ -159,7 +159,7 @@ else
 	printf "/tmp/$TMPDIR directory exists.\n\n"
 fi
 
-compressFiles ()
+fullCompress ()
 {
 	printf "Your files are being archived and compressed.\n"
 	printf "This will take a while . . .\n\n"
@@ -191,6 +191,9 @@ clear
 
 asciiArt
 
+echo
+echo
+
 
 ###
 ## Main Menu
@@ -212,7 +215,7 @@ do
 			"Full" )
 				## Secondary Menu.
 				PS3='Select the location to transfer your archives: '
-				SELECTION=("SSH" "Local" "Back To Main Menu" "Quit")
+				SELECTION=("SSH" "Local" "Go Back" "Quit")
 
 				select CHOICE in "${SELECTION[@]}"
 				do
@@ -236,7 +239,7 @@ do
 
 							read -p "-> " DIRNAME
 
-							compressFiles
+							fullCompress
 							##NOTE: For some reason the script doesn't go any further than here.
 							printf "Finished compressing files.\n"
 
@@ -258,6 +261,7 @@ do
 							rmdir /tmp/$TMPDIR
 
 							successMessage
+							break 2
 							;;
 						"Local" )
 							printf "Enter the destination local directory: "
@@ -283,31 +287,59 @@ do
 							rmdir /tmp/$TMPDIR
 
 							successMessage
-							;;
-						"Back To Main Menu" )
-							break 1
-							;;
-						"Quit" )
-							printf "Exiting the script."
 							break 2
 							;;
+						"Go Back" )
+							break 2
+							;;
+						"Quit" )
+							printf "Exiting the script.\n\n"
+							exit 1
+							;;
 						* )
-							printf "Unknown choice"
+							printf "Option not in the menu.\n"
 							;;
 					esac
 				done
 				;;
 			"Incremental" )
-				echo "You chose to do an Incremental backup."
+				PS3='Select the location to transfer your archives: '
+                                SELECTION=("SSH" "Local" "Go Back" "Quit")
+
+				select CHOICE in "${SELECTION[@]}"
+				do
+					case $CHOICE in
+						"SSH" )
+							printf "You selected ssh.\n"
+							break 2
+							;;
+						"Local" )
+							printf "You selected local.\n"
+							break 2
+							;;
+						"Go Back" )
+							printf "You selected to go back to the main menu.\n"
+							break 2
+							;;
+						"Quit" )
+							printf "Exiting the script.\n\n"
+							exit 1
+							;;
+						* )
+							printf "Option in the menu.\n"
+							;;
+					esac
+				done
 				;;
 			"Restore" )
 				echo "You chose to restore from backup."
 				;;
 			"Quit" )
-				echo "Exiting the script."
+				echo "Exiting the script.\n\n"
+				exit 1
 				;;
 			* )
-				echo "Unknown choice entered."
+				echo "Choice not in menu.\n"
 				;;
 		esac
 	done
