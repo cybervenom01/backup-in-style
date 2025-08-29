@@ -19,13 +19,13 @@ CMDRSYNC=/usr/bin/rsync
 
 
 ###
-## Location to log file
+## Create directory and file to log audit messages if they don't exist.
 #
 
 LOGFILE="backup.log"
 LOGDIR=".backupstyle.d"
 
-if [ ! -d "$LOGDIR" ]
+if [ ! -d "${HOME}/$LOGDIR" ]
 then
 	mkdir ${HOME}/$LOGDIR
 	chmod 755 ${HOME}/$LOGDIR
@@ -43,10 +43,6 @@ fi
 
 
 ###
-## Assigning Names for the Backup Files
-###
-
-###
 ## Error Handling
 ###
 
@@ -62,7 +58,7 @@ exit_error ()
 	LINE_NO=$2
 	E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
 
-	printf "%b" "$E_MSG" | tee >> "${HOME}/$LOGDIR/$LOGFILE"
+	printf "%b" "$E_MSG" | tee -a "${HOME}/$LOGDIR/$LOGFILE"
 	exit $E_STAT
 }
 
@@ -75,7 +71,8 @@ successMessage ()
 {
 	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data transfer successful.\n"
 
-	printf "%b" "$S_MSG" | tee >> "${HOME}/$LOGDIR/$LOGFILE"
+	printf "%b" "$S_MSG" | tee -a "${HOME}/$LOGDIR/$LOGFILE"
+	exit 0
 }
 
 
@@ -83,7 +80,7 @@ successMessage ()
 ## Function which display an error message if the IP address was entered incorrectly.
 ##TODO: Rewrite this function.
 
-invalidIP()
+invalidIP ()
 {
 	case "$*" in
 		""|*[!0-9.]*|*[!0-9])
@@ -135,9 +132,9 @@ echo
 
 
 ###
-## Main Menu
+## The Menu
 ###
-##TODO: Configure the variables for each one.
+
 ###
 ## Menu to Choose Full Backup, Incremental Backups, Or Restore From Backups
 #
@@ -146,22 +143,21 @@ while true
 do
 	## Primary Menu.
 	PS3='Choose a Backup Method: '
-	CHOICES=("Full" "Incremental" "Restore" "Quit")
+	MAIN_M=("Full" "Incremental" "Restore" "Quit")
 	
-	select OPT in "${CHOICES[@]}"
+	select OPT in "${MAIN_M[@]}"
 	do
 		case $OPT in 
 			"Full" )
-				## Secondary Menu.
+				echo
+				## Sub Menu.
 				PS3='Select the location to transfer your archives: '
-				SELECTION=("SSH" "Local" "Go Back" "Quit")
+				SUB_M=("SSH" "Local" "Go Back" "Quit")
 
-				select CHOICE in "${SELECTION[@]}"
+				select CHOICE in "${SUB_M[@]}"
 				do
 					case $CHOICE in
 						"SSH" )
-							##NOTE: For some reason the errors are not being detected in
-							##	this section of the code
 							printf "Enter the destination directory for the ssh server: "
 
 							read -p "-> " SSHSTORAGE
@@ -182,12 +178,11 @@ do
 
 							printf "This will take some time . . .\n"
 
-							$CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* $SSHUSRNAME@SSHIPADDR:$SSHSTORAGE
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* $SSHUSRNAME@$SSHIPADDR:$SSHSTORAGE > /dev/null >&2
 
-							printf "Finished compressing files.\n"
+							printf "\n"
 
 							successMessage
-							break 1
 							;;
 						"Local" )
 							printf "Enter the destination to the local directory: "
@@ -202,10 +197,11 @@ do
 
 							printf "This will take some time . . .\n"
 
-							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* ${LOCALDIR}
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* ${LOCALDIR} > /dev/null >&2
 							
+							printf "\n"
+
 							successMessage
-							break 1
 							;;
 						"Go Back" )
 							break 2
@@ -248,10 +244,11 @@ do
 
                                                         printf "This will take some time . . .\n"
 
-                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --update --progress ${DIRNAME}/* $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE}
-							successMessage
+                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --update --progress ${DIRNAME}/* $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE} > /dev/null >&2
 
-							break 1
+							printf "\n"
+
+							successMessage
 							;;
 						"Local" )
 							printf "Enter the destination to the local directory: "
@@ -266,11 +263,11 @@ do
 
                                                         printf "This will take some time . . .\n"
 
-                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress --update ${DIRNAME}/* ${LOCALDIR}
+                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress --update ${DIRNAME}/* ${LOCALDIR} > /dev/null >&2
+
+							printf "\n"
 
 							successMessage
-
-							break 1
 							;;
 						"Go Back" )
 							printf "You selected to go back to the main menu.\n"
@@ -314,11 +311,11 @@ do
 
 							printf "This will take some time . . .\n"
 
-							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE}/* ${DIRNAME}
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE}/* ${DIRNAME} > /dev/null >&2
+
+							printf "\n"
 
 							successMessage
-
-							break 1
 							;;
 						"Local" )
 							printf "Enter the local directory name of the backup files to restore: "
@@ -333,11 +330,11 @@ do
 
 							printf "This will take some time . . .\n"
 
-							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${LOCALDIR}/* ${DIRNAME}
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${LOCALDIR}/* ${DIRNAME} > /dev/null >&2
+
+							printf "\n"
 
 							successMessage
-
-							break 1
 							;;
 						"Go Back" )
 							printf "Go back to the main menu.\n"

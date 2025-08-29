@@ -47,7 +47,7 @@ fi
 
 printf "\nChecking if commands are installed: \n"
 
-A_CMDS=( "tar" "zstd" "ssh" "scp" )
+A_CMDS=( "rsync" "tar" "zstd" "ssh" "scp" )
 
 for CMDS in "${A_CMDS[@]}";
 do
