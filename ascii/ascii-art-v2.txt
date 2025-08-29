@@ -1,0 +1,19 @@
+
+
+##################################################################
+##								##
+##			BACKUP IN STYLE				##
+##################################################################
+##								##
+## Backup In Style is a lightweight, modular Bash script built	##
+## for efficient and secure file backups on Linux and Unix-like	##
+## systems. It's designed for technical users and small		##
+## businesses that need a no-nonsense solution to automate	##
+## routine backups while maintaining full control over the	##
+## processes.							##
+##								##
+## Author: Joel Vazquez						##
+## Copyright (C) 2025						##
+## github.com/cybervenom01					##
+##								##
+##################################################################

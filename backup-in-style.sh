@@ -1,26 +1,4 @@
-#!/usr/bin/bash
-##
-
-###
-## Commands for the script to function.
-###
-
-###
-## Searches for the commands which help to compress, archive, and remotely transfer your data.
-#
-
-LST_CMDS=( "tar" "zstd" "ssh" "scp" )
-
-for cmds in "${LST_CMDS[@]}";
-do
-	if ! command -v "$cmds" > /dev/null 2>&1;
-	then
-		echo "$cmds not found"
-		echo "Please install the corresponding packages."
-		exit 0
-	fi
-done
-
+#!/bin/bash
 
 ###
 ## Configuring the values into the variables.
@@ -37,59 +15,72 @@ CMDSCP=/usr/bin/scp
 CMDZSTD=/usr/bin/zstd
 CMDCP=/usr/bin/cp
 CMDSSH=/usr/bin/ssh
+CMDRSYNC=/usr/bin/rsync
 
 
 ###
-## Assigning Names for the Backup Files
+## Create directory and file to log audit messages if they don't exist.
 #
 
-USR=$( whoami )
-HOST=$( uname -n )
-TIMESTAMP=$(date +%d%m%Y-%H%M%S)
-ARCHIVE_BACKUP=${USR}-${HOST}-${TIMESTAMP}-backup
-FULL_BACKUP=${1:-$ARCHIVE_BACKUP}
+LOGFILE="backup.log"
+LOGDIR=".backupstyle.d"
+
+if [ ! -d "${HOME}/$LOGDIR" ]
+then
+	mkdir ${HOME}/$LOGDIR
+	chmod 755 ${HOME}/$LOGDIR
+else
+	printf "${HOME}/$LOGDIR already exists.\n"
+fi
+
+if [ ! -a ${HOME}/$LOGDIR/$LOGFILE ]
+then
+	touch ${HOME}/$LOGDIR/$LOGFILE
+	chmod 644 ${HOME}/$LOGDIR/$LOGFILE
+else
+	printf "${HOME}/$LOGDIR/$LOGFILE already exists.\n"
+fi
 
 
 ###
-## Catch and Display Error Messages.
+## Error Handling
 ###
 
 ###
-## Assign Error Codes To The Variables.
-#
+## Show error status and exit
+##TODO: Make sure to test these functions. Also, log these error messages to a file.
 
-#E_STAT=1
-E_NOTFOUND=2
-E_INVSTAT=123
+trap 'exit_error $? $LINENO' ERR
 
-
-###
-## Function error on file.
-#
-
-function err_File()
+exit_error ()
 {
-	echo -e "Error [\033[0;31m$E_NOTFOUND\033[0;0m]: No such file or directory.\n\n"
-	exit $E_NOTFOUND
+	E_STAT=$1
+	LINE_NO=$2
+	E_MSG="$( date +%c ): $( uname -n ): ERROR: [$E_STAT] occurred on line $LINE_NO\n"
+
+	printf "%b" "$E_MSG" | tee -a "${HOME}/$LOGDIR/$LOGFILE"
+	exit $E_STAT
 }
 
 
 ###
-## Function error invocation of commands.
+## Log Successful Messages Function
 #
 
-function err_Invocation()
+successMessage ()
 {
-	echo -e "Error [\033[0;31m$E_INVSTAT\033[0;0m]: Invocation of the commands exited with status 1 - 125\n\n"
-	exit $E_INVSTAT
+	S_MSG="$( date +%c ): $( uname -n ): SUCCESS: Data transfer successful.\n"
+
+	printf "%b" "$S_MSG" | tee -a "${HOME}/$LOGDIR/$LOGFILE"
+	exit 0
 }
 
 
 ###
 ## Function which display an error message if the IP address was entered incorrectly.
-#
+##TODO: Rewrite this function.
 
-function validIP()
+invalidIP ()
 {
 	case "$*" in
 		""|*[!0-9.]*|*[!0-9])
@@ -111,158 +102,263 @@ function validIP()
 ###
 
 ###
-## Display the name of the script.
+## The function which displays the title of the script.
+##TODO: Choose at random which ascii art to display.
+##NOTES: Ideas: Use /dev/urandom or the rand() maybe can help you choose a file.
+##	 Use an array for a list of filenames.
+##	 Use a 'for' loop.
+##	 Use globbing.
+
+ASCIILOC="/usr/share"
+BKDIR="backupstyle"
+ASCIIDIR="asciiart"
+
+asciiArt ()
+{
+	find ${ASCIILOC}/$BKDIR/$ASCIIDIR -maxdepth 1 -type f -print | sort -R | tail -n 1 | while read file ; do cat $file; done
+}
+
+
+###
+## Call Function to display ascii art.
 #
 
-echo -e "\n"
-echo -e "\t>>> $ =============== $ <<<"
-echo -e "\t>>> { Backup In Style } <<<"
-echo -e "\t>>> $ =============== $ <<<"
-echo -e "\n\n"
+clear
+
+asciiArt
+
+echo
+echo
 
 
 ###
-## Choose a file or directory to archive and compress.
+## The Menu
 ###
 
 ###
-## Choose a file or directory to archive.
+## Menu to Choose Full Backup, Incremental Backups, Or Restore From Backups
 #
 
-read -p "Choose which file or directory to archive: " FILENAME
+while true
+do
+	## Primary Menu.
+	PS3='Choose a Backup Method: '
+	MAIN_M=("Full" "Incremental" "Restore" "Quit")
+	
+	select OPT in "${MAIN_M[@]}"
+	do
+		case $OPT in 
+			"Full" )
+				echo
+				## Sub Menu.
+				PS3='Select the location to transfer your archives: '
+				SUB_M=("SSH" "Local" "Go Back" "Quit")
 
+				select CHOICE in "${SUB_M[@]}"
+				do
+					case $CHOICE in
+						"SSH" )
+							printf "Enter the destination directory for the ssh server: "
 
-###
-## Input Validation
-#
+							read -p "-> " SSHSTORAGE
 
-if [ ! -e "${FILENAME}" ]
-then
-	err_File
-fi
+							printf "Enter the IP address of the ssh server: "
+							##TODO: Detect error in how the IP address is written.
+							read -p "-> " SSHIPADDR
+							
+							printf "Enter the username of the ssh server: "
 
+							read -p "-> " SSHUSRNAME
 
-###
-## Choos a file or directory to ignore.
-#
+							printf "Choose the files to backup: "
 
+							read -p "-> " DIRNAME
 
-echo -e "\nYou can leave this empty if you don't want to ignore any files or directories.\n"
-read -p "Choose which file or directory to ignore: " IGNOREFILE
+							printf "The files will be compressed while thay are being transfered.\n"
 
+							printf "This will take some time . . .\n"
 
-###
-## Creating the backup archive.
-#
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* $SSHUSRNAME@$SSHIPADDR:$SSHSTORAGE > /dev/null >&2
 
-echo -e "\nPreparing backup. This will take some time ..."
-$CMDFIND ${FILENAME} -mtime -1 -type f ! \( -path "${IGNOREFILE}" \) -prune -a -print0 | $CMDXARGS -0 $CMDTAR -rf $ARCHIVE_BACKUP.tar > /dev/null 2>&1
+							printf "\n"
 
+							successMessage
+							;;
+						"Local" )
+							printf "Enter the destination to the local directory: "
 
-###
-## Display an error message if there was a problem archiving the files.
-#
+							read -p "-> " LOCALDIR
 
-if [ $? -ne "0" ];
-then
-	err_Invocation
-fi
+							printf "Choose the files to backup: "
 
+							read -p "-> " DIRNAME
 
-###
-## Compressing the Archives
-###
+							printf "The files will be compressed while they are being transfered.\n"
 
-###
-## Using zstd to compress the archives.
-#
+							printf "This will take some time . . .\n"
 
-echo -e "\nCompressing with \"zstd\".\n"
-$CMDZSTD -z $ARCHIVE_BACKUP.tar > /dev/null 2>&1
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${DIRNAME}/* ${LOCALDIR} > /dev/null >&2
+							
+							printf "\n"
 
+							successMessage
+							;;
+						"Go Back" )
+							break 2
+							;;
+						"Quit" )
+							printf "Exiting the script.\n\n"
+							exit 1
+							;;
+						* )
+							printf "Option not found in the menu.\n"
+							;;
+					esac
+				done
+				;;
+			"Incremental" )
+				PS3='Select the location to transfer your archives: '
+                                SELECTION=("SSH" "Local" "Go Back" "Quit")
 
-###
-## Display an error message if there was a problem compressing the archives.
-#
+				select CHOICE in "${SELECTION[@]}"
+				do
+					case $CHOICE in
+						"SSH" )
+							printf "Enter the destination directory for the ssh server: "
 
-#if [ ${ARCHIVE_BACKUP##*.} != "tar" ]
-if [ $? -ne "0" ]
-then
-	err_File
-fi
+                                                        read -p "-> " SSHSTORAGE
 
+                                                        printf "Enter the IP address of the ssh server: "
+                                                        ##TODO: Detect error in how the IP address is written.
+                                                        read -p "-> " SSHIPADDR
 
-###
-## Selection Menu To Send files
-###
+                                                        printf "Enter the username of the ssh server: "
 
-###
-## Select Storage Location.
-#
+                                                        read -p "-> " SSHUSRNAME
 
-echo -e "Choose where to send files.\n"
-echo -e "\t1 - Local Drive\n"
-echo -e "\t2 - Remote SSH Server\n"
-echo -e "\tQ - Exit Program\n\n"
+                                                        printf "Choose the files to backup: "
 
-read -p "-> " CHOICE
+                                                        read -p "-> " DIRNAME
 
-case $CHOICE in
-	1)
-		read -p "Enter the location for the local drive. " STORAGE
-		
-		if [ ! -d "${STORAGE}" ]
-		then
-			err_File
-		fi
+                                                        printf "The files will be compressed while thay are being transfered.\n"
 
-		echo -e "\n\tTransfering...\n"
-		$CMDCP $FULL_BACKUP.tar.zst $STORAGE > /dev/null 2>&1
+                                                        printf "This will take some time . . .\n"
 
-		#if [ ${FULL_BACKUP##*.} != "zst" ]
-		if [ $? -ne "0" ]
-		then
-			err_File
-		fi
+                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --update --progress ${DIRNAME}/* $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE} > /dev/null >&2
 
-		echo -e "\nYour data has been successfuly transfered.\n\n"
-		;;
-	2)
-		read -p "Enter the IP address of the SSH server: " SSHIPADDR
-		
-		if ! validIP "$SSHIPADDR"
-		then
-			echo -e "\033[0;31m$SSHIPADDR\033[0;0m: Invalid IP address: Make sure you entered the correct IP address."
-			exit 61
-		fi
+							printf "\n"
 
-		read -p "Enter the username of the remote SSH server: " SSHUSRNM
+							successMessage
+							;;
+						"Local" )
+							printf "Enter the destination to the local directory: "
 
-		read -p "Enter the location of the remote directory: " SSHSTORAGE
-		
-		echo -e "\n\tYour data is ready to be transfered.\n"
-		$CMDSCP $FULL_BACKUP.tar.zst scp://$SSHUSRNM@$SSHIPADDR/$SSHSTORAGE > /dev/null 2>&1
-		
-		if [ $? -ne "0" ];
-		then
-			echo -e "Error [255]: Failed to connect to the SSH server.\n"
-			echo -e "Make sure you are using the correct username.\n"
-			echo -e "Check your network connection and server status.\n\n"
-			exit 255
-		fi
-		
-		echo -e "\n\tSecure transfer of your data has finished.\n\n"
-		;;
-	'Q')
-		;&
-	'q')
-		echo -e "\n\tExit Program\n\n"
-		exit 0;
-		;;
-	*)
-		echo -e "\n\tUnknown character entered. Exiting.\n\n"
-		exit 1;
-		;;
-esac
+                                                        read -p "-> " LOCALDIR
+
+                                                        printf "Choose the files to backup: "
+
+                                                        read -p "-> " DIRNAME
+
+                                                        printf "The files will be compressed while they are being transfered.\n"
+
+                                                        printf "This will take some time . . .\n"
+
+                                                        ${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress --update ${DIRNAME}/* ${LOCALDIR} > /dev/null >&2
+
+							printf "\n"
+
+							successMessage
+							;;
+						"Go Back" )
+							printf "You selected to go back to the main menu.\n"
+							break 2
+							;;
+						"Quit" )
+							printf "Exiting the script.\n\n"
+							exit 1
+							;;
+						* )
+							printf "Option not found in the menu.\n"
+							;;
+					esac
+				done
+				;;
+			"Restore" )
+				PS3="Select the location you want to restore from: "
+				PICK=("SSH" "Local" "Go Back" "Quit")
+
+				select OPTION in "${PICK[@]}"
+				do
+					case $OPTION in
+						"SSH" )
+							printf "Enter the remote location of the backup files to restore: "
+
+							read -p "-> " SSHSTORAGE
+
+							printf "Enter the IP address of the ssh server: "
+
+							read -p "-> " SSHIPADDR
+
+							printf "Enter the username of the ssh server: "
+
+							read -p "-> " SSHUSRNAME
+
+							printf "Enter the local directory name to transfer the backup files to: "
+
+							read -p "-> " DIRNAME
+
+							printf "Files are being transfered.\n"
+
+							printf "This will take some time . . .\n"
+
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress $SSHUSRNAME@$SSHIPADDR:${SSHSTORAGE}/* ${DIRNAME} > /dev/null >&2
+
+							printf "\n"
+
+							successMessage
+							;;
+						"Local" )
+							printf "Enter the local directory name of the backup files to restore: "
+
+							read -p "-> " LOCALDIR
+
+							printf "Enter the directory name to transfer the backup files to: "
+
+							read -p "-> " DIRNAME
+
+							printf "Files are being transfered.\n"
+
+							printf "This will take some time . . .\n"
+
+							${CMDRSYNC} -aiz --zc=zstd --zl=11 --progress ${LOCALDIR}/* ${DIRNAME} > /dev/null >&2
+
+							printf "\n"
+
+							successMessage
+							;;
+						"Go Back" )
+							printf "Go back to the main menu.\n"
+							break 2
+							;;
+						"Quit" )
+							printf "Exiting the script.\n\n"
+							exit 1
+							;;
+						* )
+							printf "Option not found in the menu.\n"
+							;;
+					esac
+				done
+				;;
+			"Quit" )
+				echo "Exiting the script.\n\n"
+				exit 1
+				;;
+			* )
+				echo "Option not found in the menu.\n"
+				;;
+		esac
+	done
+done
 
 exit 0
