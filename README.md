@@ -22,45 +22,37 @@ security, and extensibility in mind.
 
 - Interactive and user-friendly
 - Secure remote transfers via SSH
-- Creates compressed `.tar.zst` archives
-- Clean, readable code for easy customization
-
-
-## Upcoming Features
-
-- Color-coded terminal output for enhanced status visibility and error handling
-- Cron integration for scheduled, automated backups
 - Detailed logging for audits and troubleshooting
+- Clean, readable code for easy customization
 
 
 ## Installation
 
+Download from GitHub.
+
 `git clone https://github.com/cybervenom01/backup-in-style.git`
 
-`cd backup-in-style`
+`cd backup-in-style/config.d`
 
-`chmod u+x backup-in-style.sh`
+
+Make sure you run 'configure' with root privileges.
+
+This will check for the necessary commands to run the backup
+script. It will also prepare all the directories and files
+for logging audits.
+
+`# ./configure`
 
 
 ## Usage
 
-`./backup-in-style.sh`
+`cbv@localhost: $ backupstyle`
 
-``` Bash
->>> $ =============== $ <<<
->>> { Backup In Style } <<<
->>> $ =============== $ <<<
-
-
-
-Enter the directory or file you want to backup: /home/user/directory
-
-You can leave this empty if you don't want to ignore any files.
-Enter the name of the file or directory to ignore: /file/to/ignore
-
-Creating archive...
-
-Backup complete: docs_backup.tar.zst
+```Bash
+1) Full Backup
+2) Incremental Backup
+3) Restore
+4) Quit
 ```
 
 ## License
